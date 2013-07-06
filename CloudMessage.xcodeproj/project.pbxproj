@@ -1,0 +1,337 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 46;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		44E9D31D1787D9C90056FBB5 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 44E9D31C1787D9C90056FBB5 /* UIKit.framework */; };
+		44E9D31F1787D9C90056FBB5 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 44E9D31E1787D9C90056FBB5 /* Foundation.framework */; };
+		44E9D3211787D9C90056FBB5 /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 44E9D3201787D9C90056FBB5 /* CoreGraphics.framework */; };
+		44E9D3271787D9C90056FBB5 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 44E9D3251787D9C90056FBB5 /* InfoPlist.strings */; };
+		44E9D3291787D9C90056FBB5 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 44E9D3281787D9C90056FBB5 /* main.m */; };
+		44E9D32D1787D9C90056FBB5 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 44E9D32C1787D9C90056FBB5 /* AppDelegate.m */; };
+		44E9D32F1787D9C90056FBB5 /* Default.png in Resources */ = {isa = PBXBuildFile; fileRef = 44E9D32E1787D9C90056FBB5 /* Default.png */; };
+		44E9D3311787D9C90056FBB5 /* Default@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 44E9D3301787D9C90056FBB5 /* Default@2x.png */; };
+		44E9D3331787D9C90056FBB5 /* Default-568h@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 44E9D3321787D9C90056FBB5 /* Default-568h@2x.png */; };
+		44E9D3361787D9C90056FBB5 /* FirstViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 44E9D3351787D9C90056FBB5 /* FirstViewController.m */; };
+		44E9D3381787D9C90056FBB5 /* first.png in Resources */ = {isa = PBXBuildFile; fileRef = 44E9D3371787D9C90056FBB5 /* first.png */; };
+		44E9D33A1787D9C90056FBB5 /* first@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 44E9D3391787D9C90056FBB5 /* first@2x.png */; };
+		44E9D33D1787D9C90056FBB5 /* SecondViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 44E9D33C1787D9C90056FBB5 /* SecondViewController.m */; };
+		44E9D33F1787D9C90056FBB5 /* second.png in Resources */ = {isa = PBXBuildFile; fileRef = 44E9D33E1787D9C90056FBB5 /* second.png */; };
+		44E9D3411787D9C90056FBB5 /* second@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 44E9D3401787D9C90056FBB5 /* second@2x.png */; };
+		44E9D3441787D9C90056FBB5 /* FirstViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 44E9D3421787D9C90056FBB5 /* FirstViewController.xib */; };
+		44E9D3471787D9C90056FBB5 /* SecondViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 44E9D3451787D9C90056FBB5 /* SecondViewController.xib */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		44E9D3191787D9C90056FBB5 /* CloudMessage.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = CloudMessage.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		44E9D31C1787D9C90056FBB5 /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
+		44E9D31E1787D9C90056FBB5 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
+		44E9D3201787D9C90056FBB5 /* CoreGraphics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreGraphics.framework; path = System/Library/Frameworks/CoreGraphics.framework; sourceTree = SDKROOT; };
+		44E9D3241787D9C90056FBB5 /* CloudMessage-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "CloudMessage-Info.plist"; sourceTree = "<group>"; };
+		44E9D3261787D9C90056FBB5 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		44E9D3281787D9C90056FBB5 /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
+		44E9D32A1787D9C90056FBB5 /* CloudMessage-Prefix.pch */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "CloudMessage-Prefix.pch"; sourceTree = "<group>"; };
+		44E9D32B1787D9C90056FBB5 /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
+		44E9D32C1787D9C90056FBB5 /* AppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AppDelegate.m; sourceTree = "<group>"; };
+		44E9D32E1787D9C90056FBB5 /* Default.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = Default.png; sourceTree = "<group>"; };
+		44E9D3301787D9C90056FBB5 /* Default@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Default@2x.png"; sourceTree = "<group>"; };
+		44E9D3321787D9C90056FBB5 /* Default-568h@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Default-568h@2x.png"; sourceTree = "<group>"; };
+		44E9D3341787D9C90056FBB5 /* FirstViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FirstViewController.h; sourceTree = "<group>"; };
+		44E9D3351787D9C90056FBB5 /* FirstViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FirstViewController.m; sourceTree = "<group>"; };
+		44E9D3371787D9C90056FBB5 /* first.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = first.png; sourceTree = "<group>"; };
+		44E9D3391787D9C90056FBB5 /* first@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "first@2x.png"; sourceTree = "<group>"; };
+		44E9D33B1787D9C90056FBB5 /* SecondViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SecondViewController.h; sourceTree = "<group>"; };
+		44E9D33C1787D9C90056FBB5 /* SecondViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = SecondViewController.m; sourceTree = "<group>"; };
+		44E9D33E1787D9C90056FBB5 /* second.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = second.png; sourceTree = "<group>"; };
+		44E9D3401787D9C90056FBB5 /* second@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "second@2x.png"; sourceTree = "<group>"; };
+		44E9D3431787D9C90056FBB5 /* en */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = en; path = en.lproj/FirstViewController.xib; sourceTree = "<group>"; };
+		44E9D3461787D9C90056FBB5 /* en */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = en; path = en.lproj/SecondViewController.xib; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		44E9D3161787D9C90056FBB5 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				44E9D31D1787D9C90056FBB5 /* UIKit.framework in Frameworks */,
+				44E9D31F1787D9C90056FBB5 /* Foundation.framework in Frameworks */,
+				44E9D3211787D9C90056FBB5 /* CoreGraphics.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		44E9D3101787D9C90056FBB5 = {
+			isa = PBXGroup;
+			children = (
+				44E9D3221787D9C90056FBB5 /* CloudMessage */,
+				44E9D31B1787D9C90056FBB5 /* Frameworks */,
+				44E9D31A1787D9C90056FBB5 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		44E9D31A1787D9C90056FBB5 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				44E9D3191787D9C90056FBB5 /* CloudMessage.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		44E9D31B1787D9C90056FBB5 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				44E9D31C1787D9C90056FBB5 /* UIKit.framework */,
+				44E9D31E1787D9C90056FBB5 /* Foundation.framework */,
+				44E9D3201787D9C90056FBB5 /* CoreGraphics.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		44E9D3221787D9C90056FBB5 /* CloudMessage */ = {
+			isa = PBXGroup;
+			children = (
+				44E9D32B1787D9C90056FBB5 /* AppDelegate.h */,
+				44E9D32C1787D9C90056FBB5 /* AppDelegate.m */,
+				44E9D3341787D9C90056FBB5 /* FirstViewController.h */,
+				44E9D3351787D9C90056FBB5 /* FirstViewController.m */,
+				44E9D3371787D9C90056FBB5 /* first.png */,
+				44E9D3391787D9C90056FBB5 /* first@2x.png */,
+				44E9D33B1787D9C90056FBB5 /* SecondViewController.h */,
+				44E9D33C1787D9C90056FBB5 /* SecondViewController.m */,
+				44E9D33E1787D9C90056FBB5 /* second.png */,
+				44E9D3401787D9C90056FBB5 /* second@2x.png */,
+				44E9D3421787D9C90056FBB5 /* FirstViewController.xib */,
+				44E9D3451787D9C90056FBB5 /* SecondViewController.xib */,
+				44E9D3231787D9C90056FBB5 /* Supporting Files */,
+			);
+			path = CloudMessage;
+			sourceTree = "<group>";
+		};
+		44E9D3231787D9C90056FBB5 /* Supporting Files */ = {
+			isa = PBXGroup;
+			children = (
+				44E9D3241787D9C90056FBB5 /* CloudMessage-Info.plist */,
+				44E9D3251787D9C90056FBB5 /* InfoPlist.strings */,
+				44E9D3281787D9C90056FBB5 /* main.m */,
+				44E9D32A1787D9C90056FBB5 /* CloudMessage-Prefix.pch */,
+				44E9D32E1787D9C90056FBB5 /* Default.png */,
+				44E9D3301787D9C90056FBB5 /* Default@2x.png */,
+				44E9D3321787D9C90056FBB5 /* Default-568h@2x.png */,
+			);
+			name = "Supporting Files";
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		44E9D3181787D9C90056FBB5 /* CloudMessage */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 44E9D34A1787D9C90056FBB5 /* Build configuration list for PBXNativeTarget "CloudMessage" */;
+			buildPhases = (
+				44E9D3151787D9C90056FBB5 /* Sources */,
+				44E9D3161787D9C90056FBB5 /* Frameworks */,
+				44E9D3171787D9C90056FBB5 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = CloudMessage;
+			productName = CloudMessage;
+			productReference = 44E9D3191787D9C90056FBB5 /* CloudMessage.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		44E9D3111787D9C90056FBB5 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				LastUpgradeCheck = 0460;
+				ORGANIZATIONNAME = SoftwareLab;
+			};
+			buildConfigurationList = 44E9D3141787D9C90056FBB5 /* Build configuration list for PBXProject "CloudMessage" */;
+			compatibilityVersion = "Xcode 3.2";
+			developmentRegion = English;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+			);
+			mainGroup = 44E9D3101787D9C90056FBB5;
+			productRefGroup = 44E9D31A1787D9C90056FBB5 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				44E9D3181787D9C90056FBB5 /* CloudMessage */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		44E9D3171787D9C90056FBB5 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				44E9D3271787D9C90056FBB5 /* InfoPlist.strings in Resources */,
+				44E9D32F1787D9C90056FBB5 /* Default.png in Resources */,
+				44E9D3311787D9C90056FBB5 /* Default@2x.png in Resources */,
+				44E9D3331787D9C90056FBB5 /* Default-568h@2x.png in Resources */,
+				44E9D3381787D9C90056FBB5 /* first.png in Resources */,
+				44E9D33A1787D9C90056FBB5 /* first@2x.png in Resources */,
+				44E9D33F1787D9C90056FBB5 /* second.png in Resources */,
+				44E9D3411787D9C90056FBB5 /* second@2x.png in Resources */,
+				44E9D3441787D9C90056FBB5 /* FirstViewController.xib in Resources */,
+				44E9D3471787D9C90056FBB5 /* SecondViewController.xib in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		44E9D3151787D9C90056FBB5 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				44E9D3291787D9C90056FBB5 /* main.m in Sources */,
+				44E9D32D1787D9C90056FBB5 /* AppDelegate.m in Sources */,
+				44E9D3361787D9C90056FBB5 /* FirstViewController.m in Sources */,
+				44E9D33D1787D9C90056FBB5 /* SecondViewController.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXVariantGroup section */
+		44E9D3251787D9C90056FBB5 /* InfoPlist.strings */ = {
+			isa = PBXVariantGroup;
+			children = (
+				44E9D3261787D9C90056FBB5 /* en */,
+			);
+			name = InfoPlist.strings;
+			sourceTree = "<group>";
+		};
+		44E9D3421787D9C90056FBB5 /* FirstViewController.xib */ = {
+			isa = PBXVariantGroup;
+			children = (
+				44E9D3431787D9C90056FBB5 /* en */,
+			);
+			name = FirstViewController.xib;
+			sourceTree = "<group>";
+		};
+		44E9D3451787D9C90056FBB5 /* SecondViewController.xib */ = {
+			isa = PBXVariantGroup;
+			children = (
+				44E9D3461787D9C90056FBB5 /* en */,
+			);
+			name = SecondViewController.xib;
+			sourceTree = "<group>";
+		};
+/* End PBXVariantGroup section */
+
+/* Begin XCBuildConfiguration section */
+		44E9D3481787D9C90056FBB5 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				COPY_PHASE_STRIP = NO;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 6.1;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+			};
+			name = Debug;
+		};
+		44E9D3491787D9C90056FBB5 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				COPY_PHASE_STRIP = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 6.1;
+				OTHER_CFLAGS = "-DNS_BLOCK_ASSERTIONS=1";
+				SDKROOT = iphoneos;
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		44E9D34B1787D9C90056FBB5 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = "CloudMessage/CloudMessage-Prefix.pch";
+				INFOPLIST_FILE = "CloudMessage/CloudMessage-Info.plist";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				WRAPPER_EXTENSION = app;
+			};
+			name = Debug;
+		};
+		44E9D34C1787D9C90056FBB5 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = "CloudMessage/CloudMessage-Prefix.pch";
+				INFOPLIST_FILE = "CloudMessage/CloudMessage-Info.plist";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				WRAPPER_EXTENSION = app;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		44E9D3141787D9C90056FBB5 /* Build configuration list for PBXProject "CloudMessage" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				44E9D3481787D9C90056FBB5 /* Debug */,
+				44E9D3491787D9C90056FBB5 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		44E9D34A1787D9C90056FBB5 /* Build configuration list for PBXNativeTarget "CloudMessage" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				44E9D34B1787D9C90056FBB5 /* Debug */,
+				44E9D34C1787D9C90056FBB5 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 44E9D3111787D9C90056FBB5 /* Project object */;
+}
