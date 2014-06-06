@@ -8,16 +8,20 @@
 
 #import "AppDelegate.h"
 
-#import "FirstViewController.h"
-
-#import "SecondViewController.h"
+#import "LoginViewController.h"
+#import "MyMessage.h"
+#import "MySubscription.h"
+#import "SubscriptionList.h"
+#import "Setup.h"
+#import "getMacAddress.h"
 
 @implementation AppDelegate
+
+@synthesize mosquittoClient;
 
 - (void)dealloc
 {
     [_window release];
-    [_tabBarController release];
     [super dealloc];
 }
 
@@ -25,12 +29,39 @@
 {
     self.window = [[[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]] autorelease];
     // Override point for customization after application launch.
-    UIViewController *viewController1 = [[[FirstViewController alloc] initWithNibName:@"FirstViewController" bundle:nil] autorelease];
-    UIViewController *viewController2 = [[[SecondViewController alloc] initWithNibName:@"SecondViewController" bundle:nil] autorelease];
+    
+    //mqtt初始化
+    NSString *clientId = [NSString stringWithFormat:@"marquette_%@", getMacAddress()];
+//    NSString *clientId = [NSString stringWithFormat:@"inspiredxx"];
+	NSLog(@"Client ID: %@", clientId);
+    mosquittoClient = [[MosquittoClient alloc] initWithClientId:clientId];
+    
+    MyMessage *myMessage = [[[MyMessage alloc] initWithNibName:@"MyMessage" bundle:nil] autorelease];
+    MySubscription *mySubscription = [[[MySubscription alloc] initWithNibName:@"MySubscription" bundle:nil] autorelease];
+    SubscriptionList *subscriptionList = [[[SubscriptionList alloc] initWithNibName:@"SubscriptionList" bundle:nil] autorelease];
+    Setup *setup = [[[Setup alloc] initWithNibName:@"Setup" bundle:nil] autorelease];
+    myMessage.title = @"我的消息";
+    mySubscription.title = @"我的订阅";
+    subscriptionList.title = @"订阅列表";
+    setup.title = @"设置";
+    UINavigationController *navc1 = [[[UINavigationController alloc] initWithRootViewController:myMessage] autorelease];
+    UINavigationController *navc2 = [[[UINavigationController alloc] initWithRootViewController:mySubscription] autorelease];
+    UINavigationController *navc3 = [[[UINavigationController alloc] initWithRootViewController:subscriptionList] autorelease];
+    UINavigationController *navc4 = [[[UINavigationController alloc] initWithRootViewController:setup] autorelease];
+    
+//    navc1.navigationBar.barStyle = UIBarStyleBlackTranslucent;
+//    navc2.navigationBar.barStyle = UIBarStyleBlackTranslucent;
+//    navc3.navigationBar.barStyle = UIBarStyleBlackTranslucent;
+//    navc4.navigationBar.barStyle = UIBarStyleBlackTranslucent;
+    
     self.tabBarController = [[[UITabBarController alloc] init] autorelease];
-    self.tabBarController.viewControllers = @[viewController1, viewController2];
+    self.tabBarController.viewControllers = [NSArray arrayWithObjects:navc1, navc2, navc3, navc4, nil];
+    
+    [mosquittoClient setDelegate:myMessage];
+    
     self.window.rootViewController = self.tabBarController;
     [self.window makeKeyAndVisible];
+    
     return YES;
 }
 
