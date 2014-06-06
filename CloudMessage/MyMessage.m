@@ -463,7 +463,24 @@
 {
     //获取消息具体内容
 //    NSDictionary *data = [User getMessageContentByMid:[[_myMessageData objectAtIndex:[indexPath row]] objectForKey:@"mid"]];
-    if ([[[_myMessageData objectAtIndex:[indexPath row]] objectForKey:@"read_flag"]  isEqual: @"false"]) {
+    if ([[[_myMessageData objectAtIndex:[indexPath row]] objectForKey:@"read_flag"]  isEqual: @"true"]) {
+        //从数据库读取消息
+        NSDictionary *data = [User getMessageContentByMid:[[_myMessageData objectAtIndex:[indexPath row]] objectForKey:@"mid"]];
+        if (data == nil) {
+            NSLog(@"\nNot found in DB\n\n");
+            //重新下载
+            goto Download;
+        }
+        MessageContent *messageContent = [[MessageContent alloc] initWithNibName:@"MessageContent" bundle:nil];
+        messageContent.title = [data objectForKey:@"title"];
+        messageContent.hidesBottomBarWhenPushed = YES;
+        NSString *includeTime = [[NSString stringWithString:[data objectForKey:@"include_time"]] substringToIndex:19];
+        NSString *content = [[NSString alloc] initWithFormat:@"<b><center><font size=4>%@</b></center></font><br>%@<br>%@", [data objectForKey:@"title"], includeTime, [data objectForKey:@"content"]];
+        messageContent.content = content;
+        //        NSLog(@"\nContent: %@\n", content);
+        [self.navigationController pushViewController:messageContent animated:YES];
+    } else {
+    Download:
         //未读消息
         NSLog(@"\n下载消息具体内容\n");
         ASIFormDataRequest *request = [[ASIFormDataRequest alloc] initWithURL:[NSURL URLWithString:@"http://59.77.134.226:80/mobile_get_message_by_mid"]];
@@ -480,7 +497,6 @@
         [request startAsynchronous];
         //标记为已读
         NSString *readFlag = [[NSString alloc] initWithString:@"true"];
-//        [[_myMessageData objectAtIndex:[indexPath row]] setObject:readFlag forKey:@"read_flag"];
         NSMutableDictionary *obj = [[NSMutableDictionary alloc] initWithDictionary:[_myMessageData objectAtIndex:[indexPath row]]];
         NSLog(@"\nObj: %@\n", obj);
         [obj removeObjectForKey:@"read_flag"];
@@ -489,53 +505,7 @@
         //修改数据库数据标记为已读
         NSLog(@"\nUpdate: %@\n", obj);
         [User updateMessageContentByMid:[obj objectForKey:@"mid"] forField:@"read_flag" withValue:@"true"];
-    } else {
-        //从数据库读取消息
-        NSDictionary *data = [User getMessageContentByMid:[[_myMessageData objectAtIndex:[indexPath row]] objectForKey:@"mid"]];
-        MessageContent *messageContent = [[MessageContent alloc] initWithNibName:@"MessageContent" bundle:nil];
-        messageContent.title = [data objectForKey:@"title"];
-        messageContent.hidesBottomBarWhenPushed = YES;
-        NSString *includeTime = [[NSString stringWithString:[data objectForKey:@"include_time"]] substringToIndex:19];
-        NSString *content = [[NSString alloc] initWithFormat:@"<b><center><font size=4>%@</b></center></font><br>%@<br>%@", [data objectForKey:@"title"], includeTime, [data objectForKey:@"content"]];
-        messageContent.content = content;
-//        NSLog(@"\nContent: %@\n", content);
-        [self.navigationController pushViewController:messageContent animated:YES];
     }
-
-//    if (data == nil) {
-//        NSLog(@"\n下载消息具体内容\n");
-//        ASIFormDataRequest *request = [[ASIFormDataRequest alloc] initWithURL:[NSURL URLWithString:@"http://59.77.134.226:80/mobile_get_message_by_mid"]];
-//        
-//        [request setRequestMethod:@"POST"];
-//        NSString *postBody = @"{\"mid\":\"myMid\"}";
-//        //    NSLog(@"%@", [_myMessageData objectAtIndex:[indexPath row]]);
-//        postBody = [postBody stringByReplacingOccurrencesOfString:@"myMid" withString:[[_myMessageData objectAtIndex:[indexPath row]] objectForKey:@"mid"]];
-//        
-//        NSLog(@"postBody: %@", postBody);
-//        [request setPostBody:(NSMutableData *)[postBody dataUsingEncoding:NSUTF8StringEncoding]];
-//        
-//        request.delegate = self;
-//        [request startAsynchronous];
-//        NSString *readFlag = [[NSString alloc] initWithString:@"true"];
-//        [[_myMessageData objectAtIndex:[indexPath row]] setObject:readFlag forKey:@"read_flag"];
-//        NSMutableDictionary *obj = [[NSMutableDictionary alloc] initWithDictionary:[_myMessageData objectAtIndex:[indexPath row]]];
-//        NSLog(@"\nObj: %@\n", obj);
-//        [obj removeObjectForKey:@"read_flag"];
-//        [obj setObject:readFlag forKey:@"read_flag"];
-//        [_myMessageData replaceObjectAtIndex:[indexPath row] withObject:obj];
-//        //修改数据库数据标记为已读
-//        NSLog(@"\nUpdate: %@\n", obj);
-//        [User updateMessageContentByMid:[obj objectForKey:@"mid"] forField:@"read_flag" withValue:@"true"];
-//    } else {
-//        NSLog(@"\n从数据库读取到消息:\n%@\n", data);
-//        MessageContent *messageContent = [[MessageContent alloc] initWithNibName:@"MessageContent" bundle:nil];
-//        messageContent.title = [data objectForKey:@"title"];
-//        messageContent.hidesBottomBarWhenPushed = YES;
-//        NSString *includeTime = [[NSString stringWithString:[data objectForKey:@"include_time"]] substringToIndex:19];
-//        NSString *content = [[NSString alloc] initWithFormat:@"<b><center><font size=4>%@</b></center></font><br>%@<br>%@", [data objectForKey:@"title"], includeTime, [data objectForKey:@"content"]];
-//        messageContent.content = content;
-//        [self.navigationController pushViewController:messageContent animated:YES];
-//    }
 }
 
 - (void)application:(UIApplication *)application didReceiveLocalNotification:(UILocalNotification *)notification
