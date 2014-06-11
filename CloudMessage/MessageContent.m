@@ -73,7 +73,13 @@
     [slider setNumberFormatter:formatter];
     slider.font = [UIFont fontWithName:@"Futura-CondensedExtraBold" size:20];
     slider.popUpViewAnimatedColors = @[[UIColor purpleColor], [UIColor redColor], [UIColor orangeColor]];
-    
+    readingTime = 0;
+    dragCount = 0;
+    deceleratingCount = 0;
+    timerIsRunning = YES;
+    isFullReading = NO;
+    rating = 0;
+
 }
 
 - (void)viewWillDisappear:(BOOL)animated
@@ -84,13 +90,51 @@
     [subTimer invalidate];
     [dragTimer invalidate];
     [deceleratingTimer invalidate];
-    NSLog(@"\nReading time: %.1f\nContent height: %.0lf\nFull reading: %d\nDecelerating count: %d\nDrag count: %d\nRating: %.2lf\n",
+//    NSLog(@"\nContent: %@\n", [self flattenHTML:self.content trimWhiteSpace:YES]);
+//    NSLog(@"\nheight: %@\n", [self.webView stringByEvaluatingJavaScriptFromString: @"document.getElementById(\‘content\’).offsetHeight"]);
+//    NSLog(@"\nheight: %@\n", [self.webView stringByEvaluatingJavaScriptFromString: @"document.body.innertext"]);
+    
+    float height = self.webView.scrollView.contentSize.height;
+    if (height <= 504) {
+        height = [self flattenHTML:self.content trimWhiteSpace:YES].length*height/400;
+        NSLog(@"\nRecount height: %.2lf\n", height);
+    }
+//    NSLog(@"\nContent length: %d\n", [self flattenHTML:self.content trimWhiteSpace:YES].length);
+//    NSLog(@"\nReading time: %.1f\nContent height: %.0lf\nFull reading: %d\nDecelerating count: %d\nDrag count: %d\nRating: %.2lf\n",
+//          readingTime,
+//          self.webView.scrollView.contentSize.height,
+//          isFullReading,
+//          deceleratingCount,
+//          dragCount,
+//          rating);
+    NSLog(@"\ntime height full decelerating drag rating\n%.1f %.0lf %d %d %d %.2lf\n",
           readingTime,
-          self.webView.scrollView.contentSize.height,
+          height,
           isFullReading,
           deceleratingCount,
           dragCount,
           rating);
+
+}
+
+- (NSString *)flattenHTML:(NSString *)html trimWhiteSpace:(BOOL)trim {
+    NSScanner *theScanner = [NSScanner scannerWithString:html];
+    NSString *text = nil;
+    
+    while ([theScanner isAtEnd] == NO) {
+        // find start of tag
+        [theScanner scanUpToString:@"<" intoString:NULL] ;
+        // find end of tag
+        [theScanner scanUpToString:@">" intoString:&text] ;
+        // replace the found tag with a space
+        //(you can filter multi-spaces out later if you wish)
+        html = [html stringByReplacingOccurrencesOfString:
+                [ NSString stringWithFormat:@"%@>", text]
+                                               withString:@""];
+    }
+    
+    // trim off whitespace
+    return trim ? [html stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] : html;
 }
 
 - (void)webViewDidFinishLoad:(UIWebView *)webView
@@ -100,12 +144,12 @@
     [subTimer invalidate];
     mainTimer = [NSTimer scheduledTimerWithTimeInterval:10 target:self selector:@selector(readingTimeCut) userInfo:nil repeats:NO];
     subTimer = [NSTimer scheduledTimerWithTimeInterval:0.1 target:self selector:@selector(readingTimeAdd) userInfo:nil repeats:YES];
-    readingTime = 0;
-    dragCount = 0;
-    deceleratingCount = 0;
-    timerIsRunning = YES;
-    isFullReading = NO;
-    rating = 0;
+//    readingTime = 0;
+//    dragCount = 0;
+//    deceleratingCount = 0;
+//    timerIsRunning = YES;
+//    isFullReading = NO;
+//    rating = 0;
 }
 
 //阅读时间截停

@@ -242,12 +242,15 @@ static NSString *uid;
         sql = [sql stringByReplacingOccurrencesOfString:@"sn" withString:[NSString stringWithFormat:@"%d", sn]];
         sql = [sql stringByReplacingOccurrencesOfString:@"mid" withString:[message objectForKey:@"mid"]];
         sql = [sql stringByReplacingOccurrencesOfString:@"rid" withString:[message objectForKey:@"rid"]];
-        sql = [sql stringByReplacingOccurrencesOfString:@"title" withString:[message objectForKey:@"title"]];
+        NSString *title = [NSString stringWithString:[message objectForKey:@"title"]];
+        //将字符“'"去除，防止数据库错误
+        title = [title stringByReplacingOccurrencesOfString:@"'" withString:@" "];
+        sql = [sql stringByReplacingOccurrencesOfString:@"title" withString:title];
         sql = [sql stringByReplacingOccurrencesOfString:@"include_time" withString:[message objectForKey:@"include_time"]];
         //sql = [sql stringByReplacingOccurrencesOfString:@"abstract" withString:[message objectForKey:@"abstract"]];
         NSString *abstract = [NSString stringWithString:[message objectForKey:@"include_time"]];
         //将字符“'"去除，防止数据库错误
-        abstract = [abstract stringByReplacingOccurrencesOfString:@"'" withString:@""];
+        abstract = [abstract stringByReplacingOccurrencesOfString:@"'" withString:@" "];
         sql = [sql stringByReplacingOccurrencesOfString:@"abstract" withString:abstract];
         sql = [sql stringByReplacingOccurrencesOfString:@"read_flag" withString:[message objectForKey:@"read_flag"]];
 
