@@ -20,7 +20,8 @@
 + (void)setSubscriptionRefresh:(BOOL)refresh;
 - (void)getMySubscription;
 + (void)insertMessageInfoBySn:(NSInteger) sn message:(NSDictionary *)message;
-+ (NSMutableArray *)getMessageInfoByLimit:(NSInteger) limit offset:(NSInteger) offset;
++ (NSMutableArray *)getMessageInfoByLimit:(NSInteger)limit offset:(NSInteger)offset;
++ (NSMutableArray *)getMessageInfoByRid:(NSString *)rid;
 + (void)insertMessageContent:(NSDictionary *)data;
 + (NSDictionary *)getMessageContentByMid:(NSString *)mid;
 + (void)updateMessageContentByMid:(NSString *) mid forField:(NSString *)field withValue:(NSString *)value;

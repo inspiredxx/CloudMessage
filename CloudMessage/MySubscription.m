@@ -13,6 +13,7 @@
 #import "PublicDefinition.h"
 #import "AppDelegate.h"
 #import "CMNavBarNotificationView.h"
+#import "MsgOfSub.h"
 
 @interface MySubscription ()
 {
@@ -294,6 +295,15 @@
      // Pass the selected object to the new view controller.
      [self.navigationController pushViewController:detailViewController animated:YES];
      */
+    NSDictionary *obj = [_mySubscriptionData objectAtIndex:[indexPath row]];
+//    NSLog(@"\nobj: %@\n", obj);
+    NSLog(@"\nrid: %@\n", [obj objectForKey:@"_id"]);
+    
+    MsgOfSub *msgOfSub = [[[MsgOfSub alloc] initWithNibName:@"MsgOfSub" bundle:nil] autorelease];
+    msgOfSub.title = [obj objectForKey:@"name"];
+    msgOfSub.rid = [obj objectForKey:@"_id"];
+    msgOfSub.hidesBottomBarWhenPushed = YES;
+    [self.navigationController pushViewController:msgOfSub animated:YES];
 }
 
 #pragma mark -

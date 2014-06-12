@@ -40,7 +40,7 @@
     MySubscription *mySubscription = [[[MySubscription alloc] initWithNibName:@"MySubscription" bundle:nil] autorelease];
     SubscriptionList *subscriptionList = [[[SubscriptionList alloc] initWithNibName:@"SubscriptionList" bundle:nil] autorelease];
     Setup *setup = [[[Setup alloc] initWithNibName:@"Setup" bundle:nil] autorelease];
-    myMessage.title = @"我的消息";
+    myMessage.title = @"最新资讯";
     mySubscription.title = @"我的订阅";
     subscriptionList.title = @"订阅列表";
     setup.title = @"设置";

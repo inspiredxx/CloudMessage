@@ -19,6 +19,7 @@
 @interface MyMessage ()
 {
     NSMutableArray *_myMessageData;
+    NSMutableArray *_unReadMessageData;
     NSInteger _messageCount;
     NSInteger _unreadMessageCount;
     NSInteger _messageIndex;
@@ -26,6 +27,8 @@
     CGFloat lastOffsetY;
     BOOL isDecelerating;
     NSMutableDictionary *_userDefaultsDic;
+    SINavigationMenuView *navBarMenu;
+    NSInteger showIndex;
 }
 
 @end
@@ -50,6 +53,16 @@
  
     // Uncomment the following line to display an Edit button in the navigation bar for this view controller.
     // self.navigationItem.rightBarButtonItem = self.editButtonItem;
+
+    CGRect frame = CGRectMake(0.0, 0.0, 200.0, self.navigationController.navigationBar.bounds.size.height);
+    navBarMenu = [[SINavigationMenuView alloc] initWithFrame:frame title:@"最新资讯"];
+    [navBarMenu displayMenuInView:self.tableView];
+//    [navBarMenu displayMenuInView:self.navigationController.navigationBar];
+    navBarMenu.items = @[@"最新资讯", @"未读资讯", @"已读资讯"];
+    navBarMenu.delegate = self;
+    self.navigationItem.titleView = navBarMenu;
+    //显示全部
+    showIndex = 0;
     
     //登录验证
     NSString *accessToken = [[NSUserDefaults standardUserDefaults] objectForKey:ACCESS_TOKEN];
@@ -66,7 +79,6 @@
         user = [User sharedUser];
         [self dataInit];
     }
-
 }
 
 - (void)dataInit
@@ -96,6 +108,7 @@
             return NSOrderedDescending;
         }
     }];
+    [self distinguishData];
     
     //初始化未读消息数目
     //    if ([_userDefaultsDic objectForKey:UNREAD_MESSAGE_COUNT] == nil) {
@@ -119,6 +132,17 @@
     flag = YES;
 }
 
+- (void)distinguishData
+{
+    if (_unReadMessageData == nil) {
+        _unReadMessageData = [[NSMutableArray alloc] init];
+    }
+    for (NSMutableDictionary *obj in _myMessageData) {
+        if ([[obj objectForKey:@"read_flag"] isEqualToString:@"false"]) {
+            [_unReadMessageData addObject:obj];
+        }
+    }
+}
 
 - (void)viewWillAppear:(BOOL)animated
 {
@@ -192,6 +216,7 @@
                 return NSOrderedDescending;
             }
         }];
+        [self distinguishData];
         [self.tableView reloadData];
     }
     _isLoading = NO;
@@ -274,8 +299,7 @@
 }
 
 - (void)scrollViewDidScroll:(UIScrollView *)scrollView
-{    
-	
+{
 	[_refreshFooterView egoRefreshScrollViewDidScroll:scrollView];
 }
 
@@ -332,6 +356,21 @@
     return [NSDate date];
 }
 
+#pragma mark - SINavigationMenuDelegate
+- (void)didSelectItemAtIndex:(NSUInteger)index
+{
+    if (index == 0) {
+        showIndex = 0;
+        [navBarMenu setTitle:@"最新资讯"];
+    } else if (index == 1) {
+        showIndex = 1;
+        [navBarMenu setTitle:@"未读资讯"];
+    } else if (index == 2) {
+        showIndex = 2;
+        [navBarMenu setTitle:@"已读资讯"];
+    }
+    [self.tableView reloadData];
+}
 
 #pragma mark - Table view data source
 
@@ -342,9 +381,13 @@
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section
 {
-    return [_myMessageData count];
+    if (showIndex == 0) {
+        return [_myMessageData count];
+    } else if (showIndex == 1) {
+        return [_unReadMessageData count];
+    }
+    return 0;
 }
-
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
 {
     static NSString *CellIdentifier = @"Cell";
@@ -354,18 +397,28 @@
     }
     
     // Configure the cell...
-    NSDictionary *obj = [_myMessageData objectAtIndex:[indexPath row]];
-    if (obj != nil) {
-        cell.textLabel.text = [obj objectForKey:@"title"];
-        if ([[obj objectForKey:@"read_flag"] isEqual:@"false"]) {
-//            NSLog(@"这是一条未读消息");
+    if (showIndex == 0) {
+        NSDictionary *obj = [_myMessageData objectAtIndex:[indexPath row]];
+        if (obj != nil) {
+            cell.textLabel.text = [obj objectForKey:@"title"];
+            if ([[obj objectForKey:@"read_flag"] isEqual:@"false"]) {
+                //            NSLog(@"这是一条未读消息");
+                [cell.textLabel setTextColor:[UIColor redColor]];
+                cell.detailTextLabel.text = [NSString stringWithFormat:@"未读 %@ %@", [obj objectForKey:@"include_time"], [obj objectForKey:@"abstract"]];
+                [cell.detailTextLabel setTextColor:[UIColor redColor]];
+            } else {
+                [cell.textLabel setTextColor:[UIColor blackColor]];
+                cell.detailTextLabel.text = [NSString stringWithFormat:@"%@ %@", [obj objectForKey:@"include_time"], [obj objectForKey:@"abstract"]];
+                [cell.detailTextLabel setTextColor:[UIColor blackColor]];
+            }
+        }
+    } else if (showIndex == 1) {
+        NSDictionary *obj = [_unReadMessageData objectAtIndex:[indexPath row]];
+        if (obj != nil) {
+            cell.textLabel.text = [obj objectForKey:@"title"];
             [cell.textLabel setTextColor:[UIColor redColor]];
             cell.detailTextLabel.text = [NSString stringWithFormat:@"未读 %@ %@", [obj objectForKey:@"include_time"], [obj objectForKey:@"abstract"]];
             [cell.detailTextLabel setTextColor:[UIColor redColor]];
-        } else {
-            [cell.textLabel setTextColor:[UIColor blackColor]];
-            cell.detailTextLabel.text = [NSString stringWithFormat:@"%@ %@", [obj objectForKey:@"include_time"], [obj objectForKey:@"abstract"]];
-            [cell.detailTextLabel setTextColor:[UIColor blackColor]];
         }
     }
     
@@ -395,6 +448,7 @@
             return NSOrderedDescending;
         }
     }];
+    [self distinguishData];
 //    _messageCount = [_myMessageData count];
     NSLog(@"\n_messageCount: %d\n", _messageCount);
     [self.tableView reloadData];
@@ -502,6 +556,7 @@
         [obj removeObjectForKey:@"read_flag"];
         [obj setObject:readFlag forKey:@"read_flag"];
         [_myMessageData replaceObjectAtIndex:[indexPath row] withObject:obj];
+        [self distinguishData];
         //修改数据库数据标记为已读
         NSLog(@"\nUpdate: %@\n", obj);
         [User updateMessageContentByMid:[obj objectForKey:@"mid"] forField:@"read_flag" withValue:@"true"];
@@ -566,6 +621,7 @@
             return NSOrderedDescending;
         }
     }];
+    [self distinguishData];
 //    NSLog(@"\nMyMessageData:\n%@\n", _myMessageData);
     [UIApplication sharedApplication].applicationIconBadgeNumber = _unreadMessageCount;
     AppDelegate *app = (AppDelegate *)[UIApplication sharedApplication].delegate;

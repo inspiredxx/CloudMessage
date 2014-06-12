@@ -10,8 +10,9 @@
 #import "User.h"
 #import "MosquittoClient.h"
 #import "EGORefreshTableFooterView.h"
+#import "SINavigationMenuView.h"
 
-@interface MyMessage : UITableViewController <MosquittoClientDelegate, EGORefreshTableDelegate>
+@interface MyMessage : UITableViewController <MosquittoClientDelegate, EGORefreshTableDelegate, SINavigationMenuDelegate>
 {
     UIActivityIndicatorView *activityIndicator;
     User *user;

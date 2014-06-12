@@ -47,6 +47,7 @@
 //    UILabel *titleLabel = [[UILabel alloc] initWithFrame:CGRectMake(0, 0, 280, 44)];
 //    titleLabel.text = self.title;
 //    self.navigationItem.titleView = titleLabel;
+//    NSLog(@"\nContent: %@\n", self.content);
     [self.webView loadHTMLString:self.content baseURL:[NSURL fileURLWithPath:[[NSBundle mainBundle] bundlePath]]];
     [self.webView setDelegate:self];
     [self.webView.scrollView setDelegate:self];
@@ -98,6 +99,7 @@
     if (height <= 504) {
         height = [self flattenHTML:self.content trimWhiteSpace:YES].length*height/400;
         NSLog(@"\nRecount height: %.2lf\n", height);
+        isFullReading = TRUE;
     }
 //    NSLog(@"\nContent length: %d\n", [self flattenHTML:self.content trimWhiteSpace:YES].length);
 //    NSLog(@"\nReading time: %.1f\nContent height: %.0lf\nFull reading: %d\nDecelerating count: %d\nDrag count: %d\nRating: %.2lf\n",
@@ -197,13 +199,13 @@
 {
     NSLog(@"\n滑动\n");
     [dragTimer invalidate];
-    deceleratingTimer = [NSTimer scheduledTimerWithTimeInterval:1 target:self selector:@selector(deceleratingTimeAdd) userInfo:nil repeats:NO];
+    deceleratingTimer = [NSTimer scheduledTimerWithTimeInterval:0.8 target:self selector:@selector(deceleratingTimeAdd) userInfo:nil repeats:NO];
 }
 
 - (void)scrollViewDidEndDragging:(UIScrollView *)scrollView willDecelerate:(BOOL)decelerate
 {
     NSLog(@"\n拽动\n");
-    dragTimer = [NSTimer scheduledTimerWithTimeInterval:1 target:self selector:@selector(dragTimeAdd) userInfo:nil repeats:NO];
+    dragTimer = [NSTimer scheduledTimerWithTimeInterval:0.8 target:self selector:@selector(dragTimeAdd) userInfo:nil repeats:NO];
 }
 
 - (void)scrollViewDidScroll:(UIScrollView *)scrollView

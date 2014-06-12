@@ -12,6 +12,6 @@
 @interface MessageContent : UIViewController <UIWebViewDelegate, UIScrollViewDelegate, ASValueTrackingSliderDataSource>
 
 @property (nonatomic, assign) IBOutlet UIWebView *webView;
-@property (nonatomic, assign) NSString *content;
+@property (nonatomic, retain) NSString *content;
 
 @end
