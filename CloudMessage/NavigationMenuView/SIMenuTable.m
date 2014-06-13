@@ -164,7 +164,6 @@
     [cell setSelected:YES withCompletionBlock:^{
         [self.menuDelegate didSelectItemAtIndex:indexPath.row];
     }];
-    
 }
 
 - (void)tableView:(UITableView *)tableView didDeselectRowAtIndexPath:(NSIndexPath *)indexPath

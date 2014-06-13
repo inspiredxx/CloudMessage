@@ -20,6 +20,7 @@
 {
     NSMutableArray *_myMessageData;
     NSMutableArray *_unReadMessageData;
+    NSMutableArray *_readedMessageData;
     NSInteger _messageCount;
     NSInteger _unreadMessageCount;
     NSInteger _messageIndex;
@@ -132,14 +133,24 @@
     flag = YES;
 }
 
+//整理未读、已读资讯
 - (void)distinguishData
 {
     if (_unReadMessageData == nil) {
         _unReadMessageData = [[NSMutableArray alloc] init];
+    } else {
+        [_unReadMessageData removeAllObjects];
+    }
+    if (_readedMessageData == nil) {
+        _readedMessageData = [[NSMutableArray alloc] init];
+    } else {
+        [_readedMessageData removeAllObjects];
     }
     for (NSMutableDictionary *obj in _myMessageData) {
         if ([[obj objectForKey:@"read_flag"] isEqualToString:@"false"]) {
             [_unReadMessageData addObject:obj];
+        } else if ([[obj objectForKey:@"read_flag"] isEqualToString:@"true"]) {
+            [_readedMessageData addObject:obj];
         }
     }
 }
@@ -385,6 +396,8 @@
         return [_myMessageData count];
     } else if (showIndex == 1) {
         return [_unReadMessageData count];
+    } else if (showIndex == 2) {
+        return [_readedMessageData count];
     }
     return 0;
 }
@@ -419,6 +432,14 @@
             [cell.textLabel setTextColor:[UIColor redColor]];
             cell.detailTextLabel.text = [NSString stringWithFormat:@"未读 %@ %@", [obj objectForKey:@"include_time"], [obj objectForKey:@"abstract"]];
             [cell.detailTextLabel setTextColor:[UIColor redColor]];
+        }
+    } else if (showIndex == 2) {
+        NSDictionary *obj = [_readedMessageData objectAtIndex:[indexPath row]];
+        if (obj != nil) {
+            cell.textLabel.text = [obj objectForKey:@"title"];
+            [cell.textLabel setTextColor:[UIColor blackColor]];
+            cell.detailTextLabel.text = [NSString stringWithFormat:@"%@ %@", [obj objectForKey:@"include_time"], [obj objectForKey:@"abstract"]];
+            [cell.detailTextLabel setTextColor:[UIColor blackColor]];
         }
     }
     
@@ -516,10 +537,17 @@
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
 {
     //获取消息具体内容
-//    NSDictionary *data = [User getMessageContentByMid:[[_myMessageData objectAtIndex:[indexPath row]] objectForKey:@"mid"]];
-    if ([[[_myMessageData objectAtIndex:[indexPath row]] objectForKey:@"read_flag"]  isEqual: @"true"]) {
+    NSMutableArray *messageData = nil;
+    if (showIndex == 0) {
+        messageData = _myMessageData;
+    } else if (showIndex == 1) {
+        messageData = _unReadMessageData;
+    } else if (showIndex == 2) {
+        messageData = _readedMessageData;
+    }
+    if ([[[messageData objectAtIndex:[indexPath row]] objectForKey:@"read_flag"]  isEqual: @"true"]) {
         //从数据库读取消息
-        NSDictionary *data = [User getMessageContentByMid:[[_myMessageData objectAtIndex:[indexPath row]] objectForKey:@"mid"]];
+        NSDictionary *data = [User getMessageContentByMid:[[messageData objectAtIndex:[indexPath row]] objectForKey:@"mid"]];
         if (data == nil) {
             NSLog(@"\nNot found in DB\n\n");
             //重新下载
@@ -531,7 +559,6 @@
         NSString *includeTime = [[NSString stringWithString:[data objectForKey:@"include_time"]] substringToIndex:19];
         NSString *content = [[NSString alloc] initWithFormat:@"<b><center><font size=4>%@</b></center></font><br>%@<br>%@", [data objectForKey:@"title"], includeTime, [data objectForKey:@"content"]];
         messageContent.content = content;
-        //        NSLog(@"\nContent: %@\n", content);
         [self.navigationController pushViewController:messageContent animated:YES];
     } else {
     Download:
@@ -541,8 +568,7 @@
         
         [request setRequestMethod:@"POST"];
         NSString *postBody = @"{\"mid\":\"myMid\"}";
-        //    NSLog(@"%@", [_myMessageData objectAtIndex:[indexPath row]]);
-        postBody = [postBody stringByReplacingOccurrencesOfString:@"myMid" withString:[[_myMessageData objectAtIndex:[indexPath row]] objectForKey:@"mid"]];
+        postBody = [postBody stringByReplacingOccurrencesOfString:@"myMid" withString:[[messageData objectAtIndex:[indexPath row]] objectForKey:@"mid"]];
         
         NSLog(@"postBody: %@", postBody);
         [request setPostBody:(NSMutableData *)[postBody dataUsingEncoding:NSUTF8StringEncoding]];
@@ -551,11 +577,18 @@
         [request startAsynchronous];
         //标记为已读
         NSString *readFlag = [[NSString alloc] initWithString:@"true"];
-        NSMutableDictionary *obj = [[NSMutableDictionary alloc] initWithDictionary:[_myMessageData objectAtIndex:[indexPath row]]];
+        NSMutableDictionary *obj = [[NSMutableDictionary alloc] initWithDictionary:[messageData objectAtIndex:[indexPath row]]];
         NSLog(@"\nObj: %@\n", obj);
         [obj removeObjectForKey:@"read_flag"];
         [obj setObject:readFlag forKey:@"read_flag"];
-        [_myMessageData replaceObjectAtIndex:[indexPath row] withObject:obj];
+        for (NSDictionary *obj1 in _myMessageData) {
+            if ([[obj1 objectForKey:@"mid"] isEqualToString:[obj objectForKey:@"mid"]]) {
+                [_myMessageData removeObject:obj1];
+                [_myMessageData addObject:obj];
+                break;
+            }
+        }
+//        [_myMessageData replaceObjectAtIndex:[indexPath row] withObject:obj];
         [self distinguishData];
         //修改数据库数据标记为已读
         NSLog(@"\nUpdate: %@\n", obj);
@@ -577,12 +610,12 @@
 
 - (void) didDisconnect
 {
-    
+    NSLog(@"\nDisconnect mosq\n");
 }
 
 - (void) didPublish: (NSUInteger)messageId
 {
-    
+    NSLog(@"\nPublish. messageId: %d\n", messageId);
 }
 
 - (void) didReceiveMessage: (MosquittoMessage*)mosq_msg
@@ -622,7 +655,6 @@
         }
     }];
     [self distinguishData];
-//    NSLog(@"\nMyMessageData:\n%@\n", _myMessageData);
     [UIApplication sharedApplication].applicationIconBadgeNumber = _unreadMessageCount;
     AppDelegate *app = (AppDelegate *)[UIApplication sharedApplication].delegate;
     [[[app.tabBarController.tabBar items]objectAtIndex:0] setBadgeValue:[NSString stringWithFormat:@"%d", _unreadMessageCount]];
@@ -659,17 +691,14 @@
 {
     NSLog(@"请求结束了");
     [activityIndicator stopAnimating];
-
     
     NSString *str = request.responseString;
     if ([str length] == 0) {
         NSLog(@"str为空！");
     }
-    //NSLog(@"str is ---> %@",str);
     
     SBJSON *json = [[[SBJSON alloc] init] autorelease];
     NSDictionary *dic = [json objectWithString:str];
-    //    NSLog(@"dic = %@",dic);
     NSString *code = [dic objectForKey:@"code"];
     NSString *msg = [dic objectForKey:@"msg"];
     NSLog(@"code: %@", code);
@@ -694,7 +723,6 @@
         
         MessageContent *messageContent = [[MessageContent alloc] initWithNibName:@"MessageContent" bundle:nil];
         messageContent.title = [data objectForKey:@"title"];
-//        messageContent.hidesBottomBarWhenPushed = YES;
         NSString *includeTime = [[NSString stringWithString:[data objectForKey:@"include_time"]] substringToIndex:19];
         NSString *content = [[NSString alloc] initWithFormat:@"<b><center><font size=4>%@</b></center></font><br>%@<br>%@", [data objectForKey:@"title"], includeTime, [data objectForKey:@"content"]];
         messageContent.content = content;
@@ -705,7 +733,6 @@
     } else {
         NSLog(@"msg: %@", msg);
     }
-    
 }
 
 - (void)requestFailed:(ASIHTTPRequest *)request

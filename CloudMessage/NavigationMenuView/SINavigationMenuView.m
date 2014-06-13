@@ -73,7 +73,7 @@
         self.table.menuDelegate = self;
     }
     [self.menuContainer addSubview:self.table];
-    NSLog(@"\ny: %f\n", tableView.contentOffset.y);
+    NSLog(@"\nshow y: %f\n", tableView.contentOffset.y);
     [self.table setFrame:CGRectMake(0, tableView.contentOffset.y+64, 320, 960)];
     [tableView setScrollEnabled:NO];
     [self rotateArrow:M_PI];
@@ -85,6 +85,8 @@
     [self rotateArrow:0];
     [self.table hide];
     UITableView *tableView = self.menuContainer;
+    NSLog(@"\nhide y: %f\n", tableView.contentOffset.y);
+    [self.table setFrame:CGRectMake(0, tableView.contentOffset.y+64, 320, 960)];
     [tableView setScrollEnabled:YES];
 }
 
