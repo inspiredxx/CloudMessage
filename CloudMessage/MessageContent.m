@@ -97,7 +97,7 @@
     
     float height = self.webView.scrollView.contentSize.height;
     if (height <= 504) {
-        height = [self flattenHTML:self.content trimWhiteSpace:YES].length*height/400;
+        height = [self flattenHTML:self.content trimWhiteSpace:YES].length*height/400 + 40;
         NSLog(@"\nRecount height: %.2lf\n", height);
         isFullReading = TRUE;
     }
@@ -144,7 +144,7 @@
     NSLog(@"\n加载完成\n");
     [mainTimer invalidate];
     [subTimer invalidate];
-    mainTimer = [NSTimer scheduledTimerWithTimeInterval:10 target:self selector:@selector(readingTimeCut) userInfo:nil repeats:NO];
+    mainTimer = [NSTimer scheduledTimerWithTimeInterval:12 target:self selector:@selector(readingTimeCut) userInfo:nil repeats:NO];
     subTimer = [NSTimer scheduledTimerWithTimeInterval:0.1 target:self selector:@selector(readingTimeAdd) userInfo:nil repeats:YES];
 //    readingTime = 0;
 //    dragCount = 0;
@@ -157,7 +157,7 @@
 //阅读时间截停
 - (void)readingTimeCut
 {
-    NSLog(@"\n10s\n");
+    NSLog(@"\n12s\n");
     timerIsRunning = NO;
     [subTimer setFireDate:[NSDate distantFuture]];
 }
@@ -190,7 +190,7 @@
         timerIsRunning = YES;
     }
     [mainTimer invalidate];
-    mainTimer = [NSTimer scheduledTimerWithTimeInterval:10 target:self selector:@selector(readingTimeCut) userInfo:nil repeats:NO];
+    mainTimer = [NSTimer scheduledTimerWithTimeInterval:12 target:self selector:@selector(readingTimeCut) userInfo:nil repeats:NO];
     [dragTimer invalidate];
     [deceleratingTimer invalidate];
 }
@@ -199,19 +199,18 @@
 {
     NSLog(@"\n滑动\n");
     [dragTimer invalidate];
-    deceleratingTimer = [NSTimer scheduledTimerWithTimeInterval:0.8 target:self selector:@selector(deceleratingTimeAdd) userInfo:nil repeats:NO];
+    deceleratingTimer = [NSTimer scheduledTimerWithTimeInterval:0.65 target:self selector:@selector(deceleratingTimeAdd) userInfo:nil repeats:NO];
 }
 
 - (void)scrollViewDidEndDragging:(UIScrollView *)scrollView willDecelerate:(BOOL)decelerate
 {
     NSLog(@"\n拽动\n");
-    dragTimer = [NSTimer scheduledTimerWithTimeInterval:0.8 target:self selector:@selector(dragTimeAdd) userInfo:nil repeats:NO];
+    dragTimer = [NSTimer scheduledTimerWithTimeInterval:0.65 target:self selector:@selector(dragTimeAdd) userInfo:nil repeats:NO];
 }
 
 - (void)scrollViewDidScroll:(UIScrollView *)scrollView
 {
-    if ([scrollView isDecelerating] == true) {
-//        NSLog(@"滑动");
+    if ([scrollView isDecelerating] == true) {//        NSLog(@"滑动");
     } else {
 //        NSLog(@"拽动");
     }

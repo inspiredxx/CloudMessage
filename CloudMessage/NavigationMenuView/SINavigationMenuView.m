@@ -12,6 +12,9 @@
 #import "SIMenuConfiguration.h"
 
 @interface SINavigationMenuView  ()
+{
+    float tableViewOffset;
+}
 @property (nonatomic, strong) SIMenuButton *menuButton;
 @property (nonatomic, strong) SIMenuTable *table;
 @property (nonatomic, strong) UIView *menuContainer;
@@ -73,8 +76,12 @@
         self.table.menuDelegate = self;
     }
     [self.menuContainer addSubview:self.table];
+    //滚动到顶部，防止出现菜单漂移
+    [tableView scrollRectToVisible:CGRectMake(0, 0, 1, 1) animated:YES];
     NSLog(@"\nshow y: %f\n", tableView.contentOffset.y);
-    [self.table setFrame:CGRectMake(0, tableView.contentOffset.y+64, 320, 960)];
+//    [self.table setFrame:CGRectMake(0, tableView.contentOffset.y+64, 320, 960)];
+    [self.table setFrame:CGRectMake(0, 0, 320, 960)];
+    tableViewOffset = tableView.contentOffset.y+64;
     [tableView setScrollEnabled:NO];
     [self rotateArrow:M_PI];
     [self.table show];
@@ -86,7 +93,9 @@
     [self.table hide];
     UITableView *tableView = self.menuContainer;
     NSLog(@"\nhide y: %f\n", tableView.contentOffset.y);
-    [self.table setFrame:CGRectMake(0, tableView.contentOffset.y+64, 320, 960)];
+//    [self.table setFrame:CGRectMake(0, tableView.contentOffset.y+64, 320, 960)];
+//    [self.table setFrame:CGRectMake(0, tableViewOffset, 320, 640)];
+    [self.table setFrame:CGRectMake(0, 0, 320, 960)];
     [tableView setScrollEnabled:YES];
 }
 

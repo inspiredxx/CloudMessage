@@ -163,7 +163,7 @@
         [UIView animateWithDuration:0.1 animations:^{
             if([view isKindOfClass:[UITabBar class]] == NO)
             {
-                NSLog(@"\n%@ /*480*/568\n", view.description);
+//                NSLog(@"\n%@ /*480*/568\n", view.description);
                 [view setFrame:CGRectMake(view.frame.origin.x, view.frame.origin.y, view.frame.size.width, /*480*/568)];
             }
         }];
