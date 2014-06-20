@@ -141,7 +141,7 @@
 
 - (void)webViewDidFinishLoad:(UIWebView *)webView
 {
-    NSLog(@"\n加载完成\n");
+    NSLog(@"\n加载完成\nreadingTime: %ds\n", readingTime);
     [mainTimer invalidate];
     [subTimer invalidate];
     mainTimer = [NSTimer scheduledTimerWithTimeInterval:12 target:self selector:@selector(readingTimeCut) userInfo:nil repeats:NO];
@@ -166,7 +166,9 @@
 - (void)readingTimeAdd
 {
     readingTime += 0.1;
-//    NSLog(@"\nreadingTime: %.1f\n", readingTime);
+    if ((int)(readingTime*10)%10 == 0) {
+        NSLog(@"\nreadingTime: %.1fs\n", readingTime);
+    }
 }
 
 //滑动次数累加
@@ -191,6 +193,11 @@
     }
     [mainTimer invalidate];
     mainTimer = [NSTimer scheduledTimerWithTimeInterval:12 target:self selector:@selector(readingTimeCut) userInfo:nil repeats:NO];
+    [subTimer invalidate];
+    //还未加载完成，开始操作则开始计时
+    if (subTimer == nil) {
+        subTimer = [NSTimer scheduledTimerWithTimeInterval:0.1 target:self selector:@selector(readingTimeAdd) userInfo:nil repeats:YES];
+    }
     [dragTimer invalidate];
     [deceleratingTimer invalidate];
 }
@@ -210,18 +217,15 @@
 
 - (void)scrollViewDidScroll:(UIScrollView *)scrollView
 {
-    if ([scrollView isDecelerating] == true) {//        NSLog(@"滑动");
-    } else {
-//        NSLog(@"拽动");
+    if (isFullReading == false) {
+        CGPoint contentOffsetPoint = self.webView.scrollView.contentOffset;
+        CGRect frame = self.webView.frame;
+        if (contentOffsetPoint.y == self.webView.scrollView.contentSize.height - frame.size.height || self.webView.scrollView.contentSize.height < frame.size.height)
+        {
+            NSLog(@"scroll to the end");
+            isFullReading = YES;
+        }
     }
-    
-    CGPoint contentOffsetPoint = self.webView.scrollView.contentOffset;
-    CGRect frame = self.webView.frame;
-    if (contentOffsetPoint.y == self.webView.scrollView.contentSize.height - frame.size.height || self.webView.scrollView.contentSize.height < frame.size.height)
-    {
-        NSLog(@"scroll to the end");
-        isFullReading = YES;
-    }	
 }
 
 - (void)hideTabBar:(BOOL) hidden
