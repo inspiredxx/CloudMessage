@@ -97,7 +97,9 @@
     
     float height = self.webView.scrollView.contentSize.height;
     if (height <= 504) {
-        height = [self flattenHTML:self.content trimWhiteSpace:YES].length*height/400 + 40;
+        //recount height 有可能更大
+        height = MIN(height, [self flattenHTML:self.content trimWhiteSpace:YES].length*height/400 + 40);
+        NSLog(@"\nflattenHTML: %@\n", [self flattenHTML:self.content trimWhiteSpace:YES]);
         NSLog(@"\nRecount height: %.2lf\n", height);
         isFullReading = TRUE;
     }
@@ -116,12 +118,22 @@
           deceleratingCount,
           dragCount,
           rating);
-
+    NSString *userBehaviorData = [[NSUserDefaults standardUserDefaults] objectForKey:@"behaviorData"];
+    if (userBehaviorData == nil) {
+        NSLog(@"userBehaviorData == nil");
+        userBehaviorData = [[NSString alloc] init];
+    }
+    userBehaviorData = [userBehaviorData stringByAppendingFormat:@"%.1f %.0lf %d %d %d %.2lf\n", readingTime, height, isFullReading, deceleratingCount, dragCount, rating];
+//    NSLog(@"\nuserBehaviorData:\n%@\n", userBehaviorData);
+    [[NSUserDefaults standardUserDefaults] setObject:userBehaviorData forKey:@"behaviorData"];
+    [[NSUserDefaults standardUserDefaults] synchronize];
 }
 
 - (NSString *)flattenHTML:(NSString *)html trimWhiteSpace:(BOOL)trim {
     NSScanner *theScanner = [NSScanner scannerWithString:html];
     NSString *text = nil;
+    
+    NSLog(@"\nhtml: %@\n", html);
     
     while ([theScanner isAtEnd] == NO) {
         // find start of tag
@@ -130,10 +142,11 @@
         [theScanner scanUpToString:@">" intoString:&text] ;
         // replace the found tag with a space
         //(you can filter multi-spaces out later if you wish)
-        html = [html stringByReplacingOccurrencesOfString:
-                [ NSString stringWithFormat:@"%@>", text]
-                                               withString:@""];
+        html = [html stringByReplacingOccurrencesOfString: [NSString stringWithFormat:@"%@>", text] withString:@""];
     }
+    
+    //去除&nbsp; 空格
+    html = [html stringByReplacingOccurrencesOfString:@"&nbsp;" withString:@" "];
     
     // trim off whitespace
     return trim ? [html stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] : html;
@@ -193,9 +206,9 @@
     }
     [mainTimer invalidate];
     mainTimer = [NSTimer scheduledTimerWithTimeInterval:12 target:self selector:@selector(readingTimeCut) userInfo:nil repeats:NO];
-    [subTimer invalidate];
     //还未加载完成，开始操作则开始计时
     if (subTimer == nil) {
+        NSLog(@"\nsubTimer == nil\n");
         subTimer = [NSTimer scheduledTimerWithTimeInterval:0.1 target:self selector:@selector(readingTimeAdd) userInfo:nil repeats:YES];
     }
     [dragTimer invalidate];

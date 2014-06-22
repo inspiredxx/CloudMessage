@@ -54,6 +54,10 @@
  
     // Uncomment the following line to display an Edit button in the navigation bar for this view controller.
     // self.navigationItem.rightBarButtonItem = self.editButtonItem;
+    
+    //清空已有数据
+    [[NSUserDefaults standardUserDefaults] removeObjectForKey:@"behaviorData"];
+    [[NSUserDefaults standardUserDefaults] synchronize];
 
     CGRect frame = CGRectMake(0.0, 0.0, 200.0, self.navigationController.navigationBar.bounds.size.height);
     navBarMenu = [[SINavigationMenuView alloc] initWithFrame:frame title:@"最新资讯"];
