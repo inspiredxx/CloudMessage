@@ -12,6 +12,8 @@
 #import "ASIFormDataRequest.h"
 #import "SBJSON.h"
 #import "SVProgressHUD.h"
+#import "AppDelegate.h"
+#import "CMNavBarNotificationView.h"
 
 @interface MsgOfSub ()
 {
@@ -141,6 +143,56 @@
     }
 }
 
+- (void)tableView:(UITableView *)tableView commitEditingStyle:(UITableViewCellEditingStyle)editingStyle forRowAtIndexPath:(NSIndexPath *)indexPath
+{
+    NSLog(@"删除消息");
+    NSDictionary *obj = [subData objectAtIndex:[indexPath row]];
+    [User deleteMessageByMid:[obj objectForKey:@"mid"]];
+    if ([[obj objectForKey:@"read_flag"] isEqualToString:@"false"]) {
+        //修改未读消息数提示
+        [UIApplication sharedApplication].applicationIconBadgeNumber --;
+        AppDelegate *app = (AppDelegate *)[UIApplication sharedApplication].delegate;
+        [[[app.tabBarController.tabBar items]objectAtIndex:0] setBadgeValue:[NSString stringWithFormat:@"%d", [UIApplication sharedApplication].applicationIconBadgeNumber]];
+    }
+    
+    //[subData removeObject:obj];
+    [subData replaceObjectAtIndex:[indexPath row] withObject:[subData lastObject]];
+    [subData removeLastObject];
+
+    //按照时间排序
+    [subData sortUsingComparator:^NSComparisonResult(NSDictionary *obj1, NSDictionary *obj2) {
+        if ([[obj1 objectForKey:@"include_time"] compare:[obj2 objectForKey:@"include_time"]] == NSOrderedDescending) {
+            return NSOrderedAscending;
+        } else {
+            return NSOrderedDescending;
+        }
+    }];
+
+    [self.tableView reloadData];
+    
+    NSInteger unreadMessageCount;
+    unreadMessageCount = 0;
+    for (NSDictionary *obj in subData) {
+        if ([[obj objectForKey:@"read_flag"] isEqualToString:@"false"]) {
+            //未读消息
+            unreadMessageCount ++;
+        }
+    }
+    
+    //消息数通知
+    NSString *detailStr = [NSString stringWithFormat:@"%d条未读，共%d条", unreadMessageCount, [subData count]];
+    [CMNavBarNotificationView notifyWithText:@"已删除！" andDetail:detailStr];
+    UILocalNotification *notification = [[UILocalNotification alloc] init];
+    if (notification != nil) {
+        notification.repeatInterval = 0;
+        notification.timeZone = [NSTimeZone defaultTimeZone];
+        notification.soundName = UILocalNotificationDefaultSoundName;
+        notification.alertBody = detailStr;
+        notification.alertAction = @"查看";
+        [[UIApplication sharedApplication] presentLocalNotificationNow:notification];
+    }
+}
+
 #pragma mark -
 #pragma mark ASIHTTPRequestDelegate
 
@@ -174,6 +226,11 @@
 //        NSLog(@"\n消息内容：%@\n", data);
         [User insertMessageContent:data];
         [SVProgressHUD dismissWithSuccess:@"获取消息内容成功！"];
+        
+        //修改未读消息数提示
+        [UIApplication sharedApplication].applicationIconBadgeNumber --;
+        AppDelegate *app = (AppDelegate *)[UIApplication sharedApplication].delegate;
+        [[[app.tabBarController.tabBar items]objectAtIndex:0] setBadgeValue:[NSString stringWithFormat:@"%d", [UIApplication sharedApplication].applicationIconBadgeNumber]];
         
         MessageContent *messageContent = [[MessageContent alloc] initWithNibName:@"MessageContent" bundle:nil];
         messageContent.title = [data objectForKey:@"title"];

@@ -91,15 +91,15 @@
     NSArray *messageCountArray = [NSArray arrayWithArray:[User getMessageCount]];
     NSLog(@"\nMessage count: %d\nUnread count: %d\n", [[messageCountArray objectAtIndex:0] intValue], [[messageCountArray objectAtIndex:1] intValue]);
     
-    //读取用户配置
-    //    _userDefaultsDic = [[NSMutableDictionary alloc] initWithDictionary:[[NSUserDefaults standardUserDefaults] objectForKey:[User getUid]]];
-    //读取消息数目
-    //    if ([_userDefaultsDic objectForKey:MESSAGE_COUNT] == nil) {
-    //        _messageCount = 0;
-    //    } else {
-    //        _messageCount = [[_userDefaultsDic objectForKey:MESSAGE_COUNT] intValue];
-    //        NSLog(@"\nMessage count: %d\n", _messageCount);
-    //    }
+//读取用户配置
+//    _userDefaultsDic = [[NSMutableDictionary alloc] initWithDictionary:[[NSUserDefaults standardUserDefaults] objectForKey:[User getUid]]];
+//读取消息数目
+//    if ([_userDefaultsDic objectForKey:MESSAGE_COUNT] == nil) {
+//        _messageCount = 0;
+//    } else {
+//        _messageCount = [[_userDefaultsDic objectForKey:MESSAGE_COUNT] intValue];
+//        NSLog(@"\nMessage count: %d\n", _messageCount);
+//    }
     _messageCount = [[messageCountArray objectAtIndex:0] intValue];
     _messageIndex = MAX(0, _messageCount-25);
     
@@ -115,18 +115,18 @@
     }];
     [self distinguishData];
     
-    //初始化未读消息数目
-    //    if ([_userDefaultsDic objectForKey:UNREAD_MESSAGE_COUNT] == nil) {
-    //        _unreadMessageCount = 0;
-    //        [UIApplication sharedApplication].applicationIconBadgeNumber = nil;
-    //    } else {
-    //        _unreadMessageCount = [[_userDefaultsDic objectForKey:UNREAD_MESSAGE_COUNT] intValue];
-    //        if (_unreadMessageCount > 0) {
-    //            AppDelegate *app = (AppDelegate *)[UIApplication sharedApplication].delegate;
-    //            [[[app.tabBarController.tabBar items]objectAtIndex:0] setBadgeValue:[NSString stringWithFormat:@"%d", _unreadMessageCount]];
-    //            [UIApplication sharedApplication].applicationIconBadgeNumber = _unreadMessageCount;
-    //        }
-    //    }
+//初始化未读消息数目
+//    if ([_userDefaultsDic objectForKey:UNREAD_MESSAGE_COUNT] == nil) {
+//        _unreadMessageCount = 0;
+//        [UIApplication sharedApplication].applicationIconBadgeNumber = nil;
+//    } else {
+//        _unreadMessageCount = [[_userDefaultsDic objectForKey:UNREAD_MESSAGE_COUNT] intValue];
+//        if (_unreadMessageCount > 0) {
+//            AppDelegate *app = (AppDelegate *)[UIApplication sharedApplication].delegate;
+//            [[[app.tabBarController.tabBar items]objectAtIndex:0] setBadgeValue:[NSString stringWithFormat:@"%d", _unreadMessageCount]];
+//            [UIApplication sharedApplication].applicationIconBadgeNumber = _unreadMessageCount;
+//        }
+//    }
     _unreadMessageCount = [[messageCountArray objectAtIndex:1] intValue];
     if (_unreadMessageCount > 0){
         AppDelegate *app = (AppDelegate *)[UIApplication sharedApplication].delegate;
@@ -419,7 +419,7 @@
         if (obj != nil) {
             cell.textLabel.text = [obj objectForKey:@"title"];
             if ([[obj objectForKey:@"read_flag"] isEqual:@"false"]) {
-                //            NSLog(@"这是一条未读消息");
+//            NSLog(@"这是一条未读消息");
                 [cell.textLabel setTextColor:[UIColor redColor]];
                 cell.detailTextLabel.text = [NSString stringWithFormat:@"未读 %@ %@", [obj objectForKey:@"include_time"], [obj objectForKey:@"abstract"]];
                 [cell.detailTextLabel setTextColor:[UIColor redColor]];
