@@ -143,6 +143,7 @@
     }
 }
 
+
 - (void)tableView:(UITableView *)tableView commitEditingStyle:(UITableViewCellEditingStyle)editingStyle forRowAtIndexPath:(NSIndexPath *)indexPath
 {
     NSLog(@"删除消息");
@@ -158,7 +159,7 @@
     //[subData removeObject:obj];
     [subData replaceObjectAtIndex:[indexPath row] withObject:[subData lastObject]];
     [subData removeLastObject];
-
+    
     //按照时间排序
     [subData sortUsingComparator:^NSComparisonResult(NSDictionary *obj1, NSDictionary *obj2) {
         if ([[obj1 objectForKey:@"include_time"] compare:[obj2 objectForKey:@"include_time"]] == NSOrderedDescending) {
@@ -167,7 +168,7 @@
             return NSOrderedDescending;
         }
     }];
-
+    
     [self.tableView reloadData];
     
     NSInteger unreadMessageCount;

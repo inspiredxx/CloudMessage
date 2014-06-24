@@ -88,6 +88,7 @@
     timerIsRunning = YES;
     isFullReading = NO;
     rating = 0;
+
     readHeight = 504;
 }
 
@@ -103,14 +104,23 @@
 //    NSLog(@"\nheight: %@\n", [self.webView stringByEvaluatingJavaScriptFromString: @"document.getElementById(\‘content\’).offsetHeight"]);
 //    NSLog(@"\nheight: %@\n", [self.webView stringByEvaluatingJavaScriptFromString: @"document.body.innertext"]);
     
+//    float height = self.webView.scrollView.contentSize.height;
+//    if (height <= 504) {
+//        //recount height 有可能更大
+//        height = MIN(height, [self flattenHTML:self.content trimWhiteSpace:YES].length*height/400 + 40);
+//        NSLog(@"\nflattenHTML: %@\n", [self flattenHTML:self.content trimWhiteSpace:YES]);
+//        NSLog(@"\nRecount height: %.2lf\n", height);
+//        isFullReading = TRUE;
+//    }
+    
     if (self.webView.scrollView.contentSize.height <= 504) {
         //recount height 有可能更大
         readHeight = self.webView.scrollView.contentSize.height;
         readHeight = MIN(readHeight, [self flattenHTML:self.content trimWhiteSpace:YES].length * readHeight/400 + 40);
-        NSLog(@"\nflattenHTML: %@\n", [self flattenHTML:self.content trimWhiteSpace:YES]);
         NSLog(@"\nRecount height: %.2lf\n", readHeight);
         isFullReading = YES;
     }
+    
 //    NSLog(@"\nContent length: %d\n", [self flattenHTML:self.content trimWhiteSpace:YES].length);
 //    NSLog(@"\nReading time: %.1f\nContent height: %.0lf\nFull reading: %d\nDecelerating count: %d\nDrag count: %d\nRating: %.2lf\n",
 //          readingTime,
@@ -126,6 +136,12 @@
           deceleratingCount,
           dragCount,
           rating);
+//    NSString *userBehaviorData = [[NSUserDefaults standardUserDefaults] objectForKey:@"behaviorData"];
+//    if (userBehaviorData == nil) {
+//        NSLog(@"userBehaviorData == nil");
+//        userBehaviorData = [[NSString alloc] init];
+//    }
+    
     if (rating != 0) {
         //保存行为数据
         NSString *userBehaviorData = [[NSUserDefaults standardUserDefaults] objectForKey:@"behaviorData"];
@@ -170,10 +186,6 @@
     [subTimer invalidate];
     mainTimer = [NSTimer scheduledTimerWithTimeInterval:12 target:self selector:@selector(readingTimeCut) userInfo:nil repeats:NO];
     subTimer = [NSTimer scheduledTimerWithTimeInterval:0.1 target:self selector:@selector(readingTimeAdd) userInfo:nil repeats:YES];
-    
-    if (self.webView.scrollView.contentSize.height <= 504) {
-        isFullReading = YES;
-    }
 //    readingTime = 0;
 //    dragCount = 0;
 //    deceleratingCount = 0;
@@ -240,6 +252,7 @@
     draggingTimer = [NSTimer scheduledTimerWithTimeInterval:1 target:self selector:@selector(draggingTimeCut) userInfo:nil repeats:NO];
     [runLoop run];
 }
+
 
 - (void)scrollViewWillBeginDragging:(UIScrollView *)scrollView
 {
