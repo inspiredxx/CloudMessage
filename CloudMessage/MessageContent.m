@@ -100,18 +100,6 @@
     [subTimer invalidate];
     [dragTimer invalidate];
     [deceleratingTimer invalidate];
-//    NSLog(@"\nContent: %@\n", [self flattenHTML:self.content trimWhiteSpace:YES]);
-//    NSLog(@"\nheight: %@\n", [self.webView stringByEvaluatingJavaScriptFromString: @"document.getElementById(\‘content\’).offsetHeight"]);
-//    NSLog(@"\nheight: %@\n", [self.webView stringByEvaluatingJavaScriptFromString: @"document.body.innertext"]);
-    
-//    float height = self.webView.scrollView.contentSize.height;
-//    if (height <= 504) {
-//        //recount height 有可能更大
-//        height = MIN(height, [self flattenHTML:self.content trimWhiteSpace:YES].length*height/400 + 40);
-//        NSLog(@"\nflattenHTML: %@\n", [self flattenHTML:self.content trimWhiteSpace:YES]);
-//        NSLog(@"\nRecount height: %.2lf\n", height);
-//        isFullReading = TRUE;
-//    }
     
     if (self.webView.scrollView.contentSize.height <= 504) {
         //recount height 有可能更大
@@ -119,16 +107,11 @@
         readHeight = MIN(readHeight, [self flattenHTML:self.content trimWhiteSpace:YES].length * readHeight/400 + 40);
         NSLog(@"\nRecount height: %.2lf\n", readHeight);
         isFullReading = YES;
+    } else if (readHeight/self.webView.scrollView.contentSize.height >= 0.9) {
+        isFullReading = YES;
+        NSLog(@"\nreadHeight>=0.9\n");
     }
     
-//    NSLog(@"\nContent length: %d\n", [self flattenHTML:self.content trimWhiteSpace:YES].length);
-//    NSLog(@"\nReading time: %.1f\nContent height: %.0lf\nFull reading: %d\nDecelerating count: %d\nDrag count: %d\nRating: %.2lf\n",
-//          readingTime,
-//          self.webView.scrollView.contentSize.height,
-//          isFullReading,
-//          deceleratingCount,
-//          dragCount,
-//          rating);
     NSLog(@"\ntime height full decelerating drag rating\n%.1f %.0lf %d %d %d %.2lf\n",
           readingTime,
           readHeight,
@@ -136,22 +119,22 @@
           deceleratingCount,
           dragCount,
           rating);
-//    NSString *userBehaviorData = [[NSUserDefaults standardUserDefaults] objectForKey:@"behaviorData"];
-//    if (userBehaviorData == nil) {
-//        NSLog(@"userBehaviorData == nil");
-//        userBehaviorData = [[NSString alloc] init];
-//    }
     
     if (rating != 0) {
         //保存行为数据
-        NSString *userBehaviorData = [[NSUserDefaults standardUserDefaults] objectForKey:@"behaviorData"];
-        if (userBehaviorData == nil) {
-            NSLog(@"userBehaviorData == nil");
-            userBehaviorData = [[NSString alloc] init];
+//        NSString *userBehaviorData = [[NSUserDefaults standardUserDefaults] objectForKey:@"behaviorData"];
+//        NSMutableArray *behaviorDataArray = [[NSUserDefaults standardUserDefaults] objectForKey:@"behaviorDataArray"];
+        NSMutableArray *behaviorDataArray = [[NSMutableArray alloc] init];
+        if ([[NSUserDefaults standardUserDefaults] objectForKey:@"behaviorDataArray"] != nil) {
+            NSLog(@"behaviorDataArray != nil");
+            [behaviorDataArray addObjectsFromArray:[[NSUserDefaults standardUserDefaults] objectForKey:@"behaviorDataArray"]];
         }
-        userBehaviorData = [userBehaviorData stringByAppendingFormat:@"%.1f %.0lf %d %d %d %.2lf\n", readingTime, readHeight, isFullReading, deceleratingCount, dragCount, rating];
-        //    NSLog(@"\nuserBehaviorData:\n%@\n", userBehaviorData);
-        [[NSUserDefaults standardUserDefaults] setObject:userBehaviorData forKey:@"behaviorData"];
+
+        NSString *userBehaviorData = [[NSString alloc] initWithFormat:@"%.1f %.0lf %d %d %d %.2lf\n", readingTime, readHeight, isFullReading, deceleratingCount, dragCount, rating];
+    //    NSLog(@"\nuserBehaviorData:\n%@\n", userBehaviorData);
+        [behaviorDataArray addObject:userBehaviorData];
+//        [[NSUserDefaults standardUserDefaults] setObject:userBehaviorData forKey:@"behaviorData"];
+        [[NSUserDefaults standardUserDefaults] setObject:behaviorDataArray forKey:@"behaviorDataArray"];
         [[NSUserDefaults standardUserDefaults] synchronize];
     }
 }
@@ -249,7 +232,7 @@
 {
     NSRunLoop *runLoop = [NSRunLoop currentRunLoop];
     [draggingTimer invalidate];
-    draggingTimer = [NSTimer scheduledTimerWithTimeInterval:1 target:self selector:@selector(draggingTimeCut) userInfo:nil repeats:NO];
+    draggingTimer = [NSTimer scheduledTimerWithTimeInterval:0.7 target:self selector:@selector(draggingTimeCut) userInfo:nil repeats:NO];
     [runLoop run];
 }
 
@@ -279,14 +262,14 @@
     [self calcReadHeight];
     NSLog(@"\n滑动\n");
     [dragTimer invalidate];
-    deceleratingTimer = [NSTimer scheduledTimerWithTimeInterval:0.65 target:self selector:@selector(deceleratingTimeAdd) userInfo:nil repeats:NO];
+    deceleratingTimer = [NSTimer scheduledTimerWithTimeInterval:0.5 target:self selector:@selector(deceleratingTimeAdd) userInfo:nil repeats:NO];
 }
 
 - (void)scrollViewDidEndDragging:(UIScrollView *)scrollView willDecelerate:(BOOL)decelerate
 {
     [self calcReadHeight];
     NSLog(@"\n拽动\n");
-    dragTimer = [NSTimer scheduledTimerWithTimeInterval:0.65 target:self selector:@selector(dragTimeAdd) userInfo:nil repeats:NO];
+    dragTimer = [NSTimer scheduledTimerWithTimeInterval:0.5 target:self selector:@selector(dragTimeAdd) userInfo:nil repeats:NO];
     [draggingTimer invalidate];
 }
 

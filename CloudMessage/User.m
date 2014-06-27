@@ -19,6 +19,7 @@ static NSMutableDictionary *_runtimeData;
 static BOOL _isNeedToRefreshSubscription;
 static BOOL _isNeedToSubscribe;
 static BOOL _isInit;
+static BOOL _isNeedToRefreshMessageData;
 static NSString *uid;
 
 @implementation User
@@ -57,6 +58,7 @@ static NSString *uid;
     _isNeedToRefreshSubscription = NO;
     _isNeedToSubscribe = YES;
     _isInit = YES;
+    _isNeedToRefreshMessageData = NO;
     uid = [[NSString alloc] initWithString:[[NSUserDefaults standardUserDefaults] objectForKey:UID]];
     
     //获取我的订阅
@@ -152,9 +154,11 @@ static NSString *uid;
                 [mosq setHost:@"59.77.134.227"];
                 [mosq connect];
                 
+//                NSTimer *subscribeTimer = [NSTimer scheduledTimerWithTimeInterval:30 target:self selector:@selector(mosqSubscribe:) userInfo:mySubscriptionData repeats:NO];
+                
                 for (NSDictionary *obj in mySubscriptionData) {
-                    //订阅，最高质量qos2
-                    [mosq subscribe:[obj objectForKey:@"_id"] withQos:2];
+                    //订阅，高质量qos1
+                      [mosq subscribe:[obj objectForKey:@"_id"] withQos:1];
 //                    [mosq subscribe:[obj objectForKey:@"_id"]];
 //                    NSLog(@"\nmosq 订阅: %@", [obj objectForKey:@"_id"]);
                 }
@@ -162,6 +166,21 @@ static NSString *uid;
         }
     } else {
         NSLog(@"msg: %@", msg);
+    }
+}
+
+- (void)mosqSubscribe: (NSTimer *)timer
+{
+    NSLog(@"\n向mosq服务器订阅！\n");
+    AppDelegate *app = (AppDelegate *)[[UIApplication sharedApplication] delegate];
+    MosquittoClient *mosq = [app mosquittoClient];
+    
+    NSMutableArray *mySubscriptionData = (NSMutableArray *)[timer userInfo];
+    for (NSDictionary *obj in mySubscriptionData) {
+        //订阅，最高质量qos2
+        [mosq subscribe:[obj objectForKey:@"_id"] withQos:1];
+//                    [mosq subscribe:[obj objectForKey:@"_id"]];
+//                    NSLog(@"\nmosq 订阅: %@", [obj objectForKey:@"_id"]);
     }
 }
 
@@ -225,6 +244,16 @@ static NSString *uid;
 + (void)setSubscriptionRefresh:(BOOL)refresh
 {
     _isNeedToRefreshSubscription = refresh;
+}
+
++ (BOOL)isNeedToRefreshMessageData
+{
+    return _isNeedToRefreshMessageData;
+}
+
++ (void)setMessageDataRefresh:(BOOL)refresh
+{
+    _isNeedToRefreshMessageData = refresh;
 }
 
 + (void)insertMessageInfoBySn:(NSInteger)sn message:(NSDictionary *)message

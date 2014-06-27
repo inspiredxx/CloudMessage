@@ -30,6 +30,7 @@
     NSMutableDictionary *_userDefaultsDic;
     SINavigationMenuView *navBarMenu;
     NSInteger showIndex;
+    BOOL showCMNotificationFlag;
 }
 
 @end
@@ -54,6 +55,8 @@
  
     // Uncomment the following line to display an Edit button in the navigation bar for this view controller.
     // self.navigationItem.rightBarButtonItem = self.editButtonItem;
+    
+    showCMNotificationFlag = YES;
     
     //清空已有数据
     [[NSUserDefaults standardUserDefaults] removeObjectForKey:@"behaviorData"];
@@ -162,18 +165,14 @@
 - (void)viewWillAppear:(BOOL)animated
 {
     [super viewWillAppear:animated];
-    for (UIView *view in self.tabBarController.view.subviews)
-    {
-        [UIView animateWithDuration:0.1 animations:^{
-            if([view isKindOfClass:[UITabBar class]] == NO)
-            {
-//                NSLog(@"\n%@ /*480*/568\n", view.description);
-                [view setFrame:CGRectMake(view.frame.origin.x, view.frame.origin.y, view.frame.size.width, /*480*/568)];
-            }
-        }];
+
+    //若有未读资讯已经被阅读过则刷新
+    if ([User isNeedToRefreshMessageData] == YES) {
+        [User setMessageDataRefresh:NO];
+        _myMessageData = [[NSMutableArray alloc] initWithArray:[User getMessageInfoByLimit: _messageCount-_messageIndex offset:_messageIndex]];
+        [self distinguishData];
+        [self.tableView reloadData];
     }
-    
-    NSLog(@"获取我的消息！");
 
 }
 
@@ -187,7 +186,6 @@
 //    [_userDefaultsDic setObject:_myMessageData forKey:MY_SUBSCRIPTION];
 //    [[NSUserDefaults standardUserDefaults] setObject:_userDefaultsDic forKey:[User getUid]];
 //    [[NSUserDefaults standardUserDefaults] synchronize];
-  
 }
 
 - (void)didReceiveMemoryWarning
@@ -622,6 +620,11 @@
     NSLog(@"\nPublish. messageId: %d\n", messageId);
 }
 
+- (void)onCMFlagTimer
+{
+    showCMNotificationFlag = YES;
+}
+
 - (void) didReceiveMessage: (MosquittoMessage*)mosq_msg
 {
     NSLog(@"\nReceive!!!!!!!!\n");
@@ -630,7 +633,13 @@
     
     //未读消息通知
     NSString *detailStr = [NSString stringWithFormat:@"您有%d条未读消息", _unreadMessageCount];
-    [CMNavBarNotificationView notifyWithText:@"新消息！" andDetail:detailStr];
+
+    if (showCMNotificationFlag == YES) {
+        [CMNavBarNotificationView notifyWithText:@"新消息！" detail:detailStr andDuration:2];
+        showCMNotificationFlag = FALSE;
+        //设定时器，定时打开通知显示开关
+        NSTimer *cmFlagTimer = [NSTimer scheduledTimerWithTimeInterval:1.99 target:self selector:@selector(onCMFlagTimer) userInfo:nil repeats:NO];
+    }
     UILocalNotification *notification = [[UILocalNotification alloc] init];
     if (notification != nil) {
         notification.repeatInterval = 0;
@@ -668,6 +677,7 @@
     [[NSUserDefaults standardUserDefaults] setObject:_userDefaultsDic forKey:[User getUid]];
     [[NSUserDefaults standardUserDefaults] synchronize];
     
+    [self distinguishData];
     [self.tableView reloadData];
 }
 
@@ -721,6 +731,7 @@
         }
         NSDictionary *data = [[NSDictionary alloc] initWithDictionary:[dic objectForKey:@"data"]];
 //        NSLog(@"\n消息内容：%@\n", data);
+        //保存到数据库
         [User insertMessageContent:data];
         
         [SVProgressHUD dismissWithSuccess:@"获取消息内容成功！"];

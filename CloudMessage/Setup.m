@@ -93,9 +93,15 @@
     UISwitch *switchView = (UISwitch *)sender;
     if ([switchView isOn] == true) {
         NSLog(@"\n打开行为数据上传\n");
-        NSString *userDefaultData = [[NSUserDefaults standardUserDefaults] objectForKey:@"behaviorData"];
-        NSLog(@"\nuserBehaviorData:\n%@\n", userDefaultData);
-        [[NSUserDefaults standardUserDefaults] removeObjectForKey:@"behaviorData"];
+//        NSString *userDefaultData = [[NSUserDefaults standardUserDefaults] objectForKey:@"behaviorData"];
+        NSMutableArray *behaviorDataArray = [[NSUserDefaults standardUserDefaults] objectForKey:@"behaviorDataArray"];
+        NSString *dataStr = [[NSString alloc] init];
+        for (NSString *data in behaviorDataArray) {
+            //NSLog(@"%@", data);
+            dataStr = [dataStr stringByAppendingString:data];
+        }
+        NSLog(@"\n%@\n", dataStr);
+        [[NSUserDefaults standardUserDefaults] removeObjectForKey:@"behaviorDataArray"];
         [[NSUserDefaults standardUserDefaults] synchronize];
     } else {
         NSLog(@"\n关闭行为数据上传\n");

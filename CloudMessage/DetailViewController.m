@@ -353,7 +353,7 @@
 
             if (isSubscribingNow == YES) {                
                 NSLog(@"\nmosq 订阅: %@\n", [[_resourceData objectAtIndex:[[self.tableView indexPathForSelectedRow] row]] objectForKey:@"_id"]);
-                [mosq subscribe:[[_resourceData objectAtIndex:[[self.tableView indexPathForSelectedRow] row]] objectForKey:@"_id"]];
+                [mosq subscribe:[[_resourceData objectAtIndex:[[self.tableView indexPathForSelectedRow] row]] objectForKey:@"_id"] withQos:1];
                 [SVProgressHUD showSuccessWithStatus:@"订阅成功"];
             } else {
                 NSLog(@"\nmosq 退订: %@\n", [[_resourceData objectAtIndex:[[self.tableView indexPathForSelectedRow] row]] objectForKey:@"name"]);

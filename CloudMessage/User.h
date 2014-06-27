@@ -17,7 +17,9 @@
 + (NSDictionary *)runtimeData;
 + (void)setRuntimeData:(id)data forKey:(NSString *)key;
 + (BOOL)isNeedToRefreshSubscription;
++ (BOOL)isNeedToRefreshMessageData;
 + (void)setSubscriptionRefresh:(BOOL)refresh;
++ (void)setMessageDataRefresh:(BOOL)refresh;
 - (void)getMySubscription;
 + (void)insertMessageInfoBySn:(NSInteger) sn message:(NSDictionary *)message;
 + (NSMutableArray *)getMessageInfoByLimit:(NSInteger)limit offset:(NSInteger)offset;

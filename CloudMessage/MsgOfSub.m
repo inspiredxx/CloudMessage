@@ -140,6 +140,8 @@
         //修改数据库数据标记为已读
         NSLog(@"\nUpdate: %@\n", obj);
         [User updateMessageContentByMid:[obj objectForKey:@"mid"] forField:@"read_flag" withValue:@"true"];
+        //设置最新资讯页面数据刷新标记
+        [User setMessageDataRefresh:YES];
     }
 }
 
