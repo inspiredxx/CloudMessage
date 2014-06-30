@@ -30,7 +30,6 @@
     NSMutableDictionary *_userDefaultsDic;
     SINavigationMenuView *navBarMenu;
     NSInteger showIndex;
-    BOOL showCMNotificationFlag;
 }
 
 @end
@@ -55,8 +54,6 @@
  
     // Uncomment the following line to display an Edit button in the navigation bar for this view controller.
     // self.navigationItem.rightBarButtonItem = self.editButtonItem;
-    
-    showCMNotificationFlag = YES;
     
     //清空已有数据
     [[NSUserDefaults standardUserDefaults] removeObjectForKey:@"behaviorData"];
@@ -620,9 +617,29 @@
     NSLog(@"\nPublish. messageId: %d\n", messageId);
 }
 
-- (void)onCMFlagTimer
+- (void)onNotificationTimer: (NSTimer *)timer
 {
-    showCMNotificationFlag = YES;
+    NSInteger unreadMsgCnt = [(NSString *)timer.userInfo intValue];
+    if (unreadMsgCnt != _unreadMessageCount) {
+        //还在接收
+        NSTimer *notificationTimer = [NSTimer scheduledTimerWithTimeInterval:0.5 target:self selector:@selector(onNotificationTimer:) userInfo:[NSString stringWithFormat:@"%d", _unreadMessageCount] repeats:NO];
+        [SVProgressHUD showWithStatus:@"正在接收..."];
+    } else {
+        [SVProgressHUD dismiss];
+        //未读消息通知
+        NSString *detailStr = [NSString stringWithFormat:@"您有%d条未读消息", _unreadMessageCount];
+        [CMNavBarNotificationView notifyWithText:@"新消息！" detail:detailStr andDuration:2];
+
+        UILocalNotification *notification = [[UILocalNotification alloc] init];
+        if (notification != nil) {
+            notification.repeatInterval = 0;
+            notification.timeZone = [NSTimeZone defaultTimeZone];
+            notification.soundName = UILocalNotificationDefaultSoundName;
+            notification.alertBody = detailStr;
+            notification.alertAction = @"查看";
+            [[UIApplication sharedApplication] presentLocalNotificationNow:notification];
+        }
+    }
 }
 
 - (void) didReceiveMessage: (MosquittoMessage*)mosq_msg
@@ -631,24 +648,27 @@
     _messageCount ++;
     _unreadMessageCount ++;
     
-    //未读消息通知
-    NSString *detailStr = [NSString stringWithFormat:@"您有%d条未读消息", _unreadMessageCount];
-
-    if (showCMNotificationFlag == YES) {
-        [CMNavBarNotificationView notifyWithText:@"新消息！" detail:detailStr andDuration:2];
-        showCMNotificationFlag = FALSE;
-        //设定时器，定时打开通知显示开关
-        NSTimer *cmFlagTimer = [NSTimer scheduledTimerWithTimeInterval:1.99 target:self selector:@selector(onCMFlagTimer) userInfo:nil repeats:NO];
-    }
-    UILocalNotification *notification = [[UILocalNotification alloc] init];
-    if (notification != nil) {
-        notification.repeatInterval = 0;
-        notification.timeZone = [NSTimeZone defaultTimeZone];
-        notification.soundName = UILocalNotificationDefaultSoundName;
-        notification.alertBody = detailStr;
-        notification.alertAction = @"查看";
-        [[UIApplication sharedApplication] presentLocalNotificationNow:notification];
-    }
+    NSTimer *notificationTimer = [NSTimer scheduledTimerWithTimeInterval:0.5 target:self selector:@selector(onNotificationTimer:) userInfo:[NSString stringWithFormat:@"%d", _unreadMessageCount] repeats:NO];
+    [SVProgressHUD showWithStatus:@"正在接收..."];
+    
+//    //未读消息通知
+//    NSString *detailStr = [NSString stringWithFormat:@"您有%d条未读消息", _unreadMessageCount];
+//
+//    if (showCMNotificationFlag == YES) {
+//        [CMNavBarNotificationView notifyWithText:@"新消息！" detail:detailStr andDuration:2];
+//        showCMNotificationFlag = FALSE;
+//        //设定时器，定时打开通知显示开关
+//        NSTimer *cmFlagTimer = [NSTimer scheduledTimerWithTimeInterval:1.99 target:self selector:@selector(onCMFlagTimer) userInfo:nil repeats:NO];
+//    }
+//    UILocalNotification *notification = [[UILocalNotification alloc] init];
+//    if (notification != nil) {
+//        notification.repeatInterval = 0;
+//        notification.timeZone = [NSTimeZone defaultTimeZone];
+//        notification.soundName = UILocalNotificationDefaultSoundName;
+//        notification.alertBody = detailStr;
+//        notification.alertAction = @"查看";
+//        [[UIApplication sharedApplication] presentLocalNotificationNow:notification];
+//    }
     NSLog(@"\nMessage count: %d\n", _messageCount);
     NSLog(@"\nMessage: %@\n", mosq_msg.payload);
     SBJSON *json = [[[SBJSON alloc] init] autorelease];
