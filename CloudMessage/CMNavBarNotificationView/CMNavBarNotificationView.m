@@ -45,6 +45,7 @@ NSString *kCMNavBarNotificationViewTapReceivedNotification = @"kCMNavBarNotifica
 - (void) dealloc
 {
     [[NSNotificationCenter defaultCenter] removeObserver:self];
+    [super dealloc];
 }
 
 - (id) initWithFrame:(CGRect)frame
@@ -66,6 +67,7 @@ NSString *kCMNavBarNotificationViewTapReceivedNotification = @"kCMNavBarNotifica
         topHalfBlackView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
         
         [self addSubview:topHalfBlackView];
+        [topHalfBlackView release];
         
         [[NSNotificationCenter defaultCenter] addObserver:self
                                                  selector:@selector(willRotateScreen:)
@@ -198,6 +200,7 @@ static CGFloat const __imagePadding = 8.0f;
 {
     _delegate = nil;
     [self removeGestureRecognizer:_tapGestureRecognizer];
+    [super dealloc];
 }
 
 - (id) initWithFrame:(CGRect)frame
@@ -424,6 +427,7 @@ static CGFloat const __imagePadding = 8.0f;
         [viewToRotateIn addSubview:bgImage];
         [viewToRotateIn sendSubviewToBack:bgImage];
         __notificationWindow.currentNotification = viewToRotateIn;
+        [bgImage release];
     }
     
     [UIView animateWithDuration:0.5

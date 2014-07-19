@@ -51,7 +51,7 @@
 #pragma mark Actions
 - (void)onHandleMenuTap:(id)sender
 {
-    UITableView *tableView = self.menuContainer;
+    UITableView *tableView = (UITableView *)self.menuContainer;
     if ([tableView isDecelerating] == true) {
         return;
     }
@@ -66,7 +66,7 @@
 
 - (void)onShowMenu
 {
-    UITableView *tableView = self.menuContainer;
+    UITableView *tableView = (UITableView *)self.menuContainer;
     
     if (!self.table) {
 //        UIWindow *mainWindow = [[UIApplication sharedApplication] keyWindow];
@@ -91,7 +91,7 @@
 {
     [self rotateArrow:0];
     [self.table hide];
-    UITableView *tableView = self.menuContainer;
+    UITableView *tableView = (UITableView *)self.menuContainer;
     NSLog(@"\nhide y: %f\n", tableView.contentOffset.y);
 //    [self.table setFrame:CGRectMake(0, tableView.contentOffset.y+64, 320, 960)];
 //    [self.table setFrame:CGRectMake(0, tableViewOffset, 320, 640)];

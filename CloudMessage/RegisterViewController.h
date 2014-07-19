@@ -13,8 +13,8 @@
     UIActivityIndicatorView *activityIndicator;
 }
 
-@property (nonatomic, retain) IBOutlet UITextField *newUsernameTextField;
-@property (nonatomic, retain) IBOutlet UITextField *newPasswordTextField;
+@property (nonatomic, retain) IBOutlet UITextField *usernameTextField;
+@property (nonatomic, retain) IBOutlet UITextField *passwordTextField;
 @property (nonatomic, retain) IBOutlet UITextField *repeatPasswordTextField;
 
 - (IBAction)onSubmitBtnTouchUpInside:(UIButton *)sender;

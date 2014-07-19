@@ -9,7 +9,7 @@
 #import "MsgOfSub.h"
 #import "User.h"
 #import "MessageContent.h"
-#import "ASIFormDataRequest.h"
+#import <ASIHTTPRequest/ASIHTTPRequestHeader.h>
 #import "SBJSON.h"
 #import "SVProgressHUD.h"
 #import "AppDelegate.h"
@@ -33,6 +33,24 @@
     
     // Uncomment the following line to display an Edit button in the navigation bar for this view controller.
     // self.navigationItem.rightBarButtonItem = self.editButtonItem;
+    
+    if (_refreshHeaderView == nil) {
+		
+		_refreshHeaderView = [[EGORefreshTableHeaderView alloc] initWithFrame:CGRectMake(0.0f, 0.0f - self.tableView.bounds.size.height, self.view.frame.size.width, self.tableView.bounds.size.height)];
+		_refreshHeaderView.delegate = self;
+		[self.tableView addSubview:_refreshHeaderView];
+	}
+    //  update the last update date
+	[_refreshHeaderView refreshLastUpdatedDate];
+    
+    [self getDataFromDB];
+}
+
+- (void)getDataFromDB
+{
+    if (subData != nil) {
+        [subData release];
+    }
     subData = [[NSMutableArray alloc] initWithArray:[User getMessageInfoByRid:self.rid]];
     //按照时间排序
     [subData sortUsingComparator:^NSComparisonResult(NSDictionary *obj1, NSDictionary *obj2) {
@@ -48,6 +66,64 @@
 {
     [super didReceiveMemoryWarning];
     // Dispose of any resources that can be recreated.
+}
+
+#pragma mark -
+#pragma mark Data Source Loading / Reloading Methods
+
+- (void)reloadTableViewDataSource{
+	
+	//  should be calling your tableviews data source model to reload
+	//  put here just for demo
+    [self getDataFromDB];
+    //[self.tableView reloadData];
+	_reloading = YES;
+
+    [self doneLoadingTableViewData];
+	
+}
+
+- (void)doneLoadingTableViewData{
+	
+	//  model should call this when its done loading
+    NSLog(@"\n刷新完毕\n");
+	_reloading = NO;
+	[_refreshHeaderView egoRefreshScrollViewDataSourceDidFinishedLoading:self.tableView];
+    [self.tableView reloadData];
+}
+
+#pragma mark -
+#pragma mark UIScrollViewDelegate Methods
+
+- (void)scrollViewDidScroll:(UIScrollView *)scrollView{
+	[_refreshHeaderView egoRefreshScrollViewDidScroll:scrollView];
+    
+}
+
+- (void)scrollViewDidEndDragging:(UIScrollView *)scrollView willDecelerate:(BOOL)decelerate{
+	[_refreshHeaderView egoRefreshScrollViewDidEndDragging:scrollView];
+	
+}
+
+#pragma mark -
+#pragma mark EGORefreshTableHeaderDelegate Methods
+
+- (void)egoRefreshTableHeaderDidTriggerRefresh:(EGORefreshTableHeaderView*)view{
+	
+	[self reloadTableViewDataSource];
+	
+}
+
+- (BOOL)egoRefreshTableHeaderDataSourceIsLoading:(EGORefreshTableHeaderView*)view{
+    
+	return _reloading; // should return if data source model is reloading
+	
+}
+
+- (NSDate*)egoRefreshTableHeaderDataSourceLastUpdated:(EGORefreshTableHeaderView*)view{
+	
+	return [NSDate date]; // should return date data source was last changed
+	
 }
 
 #pragma mark - Table view data source
@@ -99,7 +175,7 @@
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
 {
     //获取消息具体内容
-    if ([[[subData objectAtIndex:[indexPath row]] objectForKey:@"read_flag"]  isEqual: @"true"]) {
+    if ([[[subData objectAtIndex:[indexPath row]] objectForKey:@"read_flag"] isEqual: @"true"]) {
         //从数据库读取消息
         NSDictionary *data = [User getMessageContentByMid:[[subData objectAtIndex:[indexPath row]] objectForKey:@"mid"]];
         if (data == nil) {
@@ -113,13 +189,49 @@
         NSString *includeTime = [[NSString stringWithString:[data objectForKey:@"include_time"]] substringToIndex:19];
         NSString *content = [[NSString alloc] initWithFormat:@"<b><center><font size=4>%@</b></center></font><br>%@<br>%@", [data objectForKey:@"title"], includeTime, [data objectForKey:@"content"]];
         messageContent.content = content;
-//        NSLog(@"\nContent: %@\n", content);
+        [content release];
         [self.navigationController pushViewController:messageContent animated:YES];
+        [messageContent release];
     } else {
     Download:
+        /*
+        ////////////////////////////////////////
+        NSLog(@"\n下载消息具体内容\n");
+        NSString *urlString=@"http://59.77.134.226:80/mobile_get_message_by_mid";
+        urlString = [urlString stringByAddingPercentEscapesUsingEncoding: NSUTF8StringEncoding];
+        NSMutableURLRequest *requestA = [[NSMutableURLRequest alloc] init];
+        [requestA setURL:[NSURL URLWithString: urlString]];
+        [requestA setCachePolicy:NSURLRequestReloadIgnoringCacheData];
+        [requestA setTimeoutInterval: 60];
+        [requestA setHTTPShouldHandleCookies:FALSE];
+        [requestA setHTTPMethod:@"POST"];
+        NSString *postBodyA = @"{\"mid\":\"myMid\"}";
+        postBodyA = [postBodyA stringByReplacingOccurrencesOfString:@"myMid" withString:[[subData objectAtIndex:[indexPath row]] objectForKey:@"mid"]];
+        [requestA setHTTPBody:[postBodyA dataUsingEncoding:NSUTF8StringEncoding]];
+        NSURLConnection *aSynConnection = nil; //可以申明为全局变量.
+        // 在协议方法中，通过判断aSynConnection，来区分，是哪一个异步请求的返回数据。
+        aSynConnection = [[NSURLConnection alloc] initWithRequest:requestA delegate:self];
+        
+        //标记为已读
+        NSString *readFlagA = [[NSString alloc] initWithString:@"true"];
+        NSMutableDictionary *objA = [[NSMutableDictionary alloc] initWithDictionary:[subData objectAtIndex:[indexPath row]]];
+        NSLog(@"\nObjA: %@\n", objA);
+        [objA removeObjectForKey:@"read_flag"];
+        [objA setObject:readFlagA forKey:@"read_flag"];
+        [subData replaceObjectAtIndex:[indexPath row] withObject:objA];
+        //修改数据库数据标记为已读
+        NSLog(@"\nUpdate: %@\n", objA);
+        [User updateMessageContentByMid:[objA objectForKey:@"mid"] forField:@"read_flag" withValue:@"true"];
+        //设置最新资讯页面数据刷新标记
+        [User setMessageDataRefresh:YES];
+        
+        return ;
+        ////////////////////////////////////////
+         */
+        
         //未读消息
         NSLog(@"\n下载消息具体内容\n");
-        ASIFormDataRequest *request = [[ASIFormDataRequest alloc] initWithURL:[NSURL URLWithString:@"http://59.77.134.226:80/mobile_get_message_by_mid"]];
+        ASIFormDataRequest *request = [[[ASIFormDataRequest alloc] initWithURL:[NSURL URLWithString:@"http://59.77.134.226:80/mobile_get_message_by_mid"]] autorelease];
         
         [request setRequestMethod:@"POST"];
         NSString *postBody = @"{\"mid\":\"myMid\"}";
@@ -137,14 +249,78 @@
         [obj removeObjectForKey:@"read_flag"];
         [obj setObject:readFlag forKey:@"read_flag"];
         [subData replaceObjectAtIndex:[indexPath row] withObject:obj];
+        [readFlag release];
         //修改数据库数据标记为已读
         NSLog(@"\nUpdate: %@\n", obj);
         [User updateMessageContentByMid:[obj objectForKey:@"mid"] forField:@"read_flag" withValue:@"true"];
         //设置最新资讯页面数据刷新标记
         [User setMessageDataRefresh:YES];
+        [obj release];
     }
 }
 
+#pragma mark- NSURLConnectionDelegate 协议方法
+
+- (void)connection:(NSURLConnection *)connection didReceiveResponse:(NSURLResponse *)aResponse {
+    NSLog(@"A请求成功！");
+    [activityIndicator startAnimating];
+    [SVProgressHUD showWithStatus:@"正在获取消息内容"];
+}
+
+- (void)connection:(NSURLConnection *)connection didReceiveData:(NSData *)data {
+    //    NSLog(@"\nreceiveData: %@\n", data);
+    NSLog(@"\nA\n");
+    
+    NSLog(@"请求结束了");
+    [activityIndicator stopAnimating];
+    
+    @autoreleasepool {
+        NSString *str = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
+        //    NSLog(@"\ndata: %@", str);
+        if ([str length] == 0) {
+            NSLog(@"str为空！");
+        }
+        SBJSON *json = [[[SBJSON alloc] init] autorelease];
+        NSDictionary *dic = [json objectWithString:str];
+        NSString *code = [dic objectForKey:@"code"];
+        NSString *msg = [dic objectForKey:@"msg"];
+        NSLog(@"code: %@", code);
+        if ([code intValue] == 0) {
+            NSDictionary *data = [[[NSDictionary alloc] initWithDictionary:[dic objectForKey:@"data"]] autorelease];
+            //        NSLog(@"\n消息内容：%@\n", data);
+            [User insertMessageContent:data];
+            [SVProgressHUD dismissWithSuccess:@"获取消息内容成功！"];
+            
+            //修改未读消息数提示
+            [UIApplication sharedApplication].applicationIconBadgeNumber --;
+            AppDelegate *app = (AppDelegate *)[UIApplication sharedApplication].delegate;
+            [[[app.tabBarController.tabBar items]objectAtIndex:0] setBadgeValue:[NSString stringWithFormat:@"%d", [UIApplication sharedApplication].applicationIconBadgeNumber]];
+            
+            MessageContent *messageContent = [[MessageContent alloc] initWithNibName:@"MessageContent" bundle:nil];
+            messageContent.title = [data objectForKey:@"title"];
+            NSString *includeTime = [[NSString stringWithString:[data objectForKey:@"include_time"]] substringToIndex:19];
+            NSString *content = [[NSString alloc] initWithFormat:@"<b><center><font size=4>%@</b></center></font><br>%@<br>%@", [data objectForKey:@"title"], includeTime, [data objectForKey:@"content"]];
+            messageContent.content = content;
+            [content release];
+            messageContent.hidesBottomBarWhenPushed = YES;
+            [self.navigationController pushViewController:messageContent animated:YES];
+            [messageContent release];
+            [self.tableView reloadData];
+        } else {
+            NSLog(@"msg: %@", msg);
+        }
+        
+    }
+}
+
+
+- (void)connection:(NSURLConnection *)connection didFailWithError:(NSError *)error {
+    NSLog(@"didFailWithError");
+}
+
+- (void)connectionDidFinishLoading:(NSURLConnection *)connection {
+    
+}
 
 - (void)tableView:(UITableView *)tableView commitEditingStyle:(UITableViewCellEditingStyle)editingStyle forRowAtIndexPath:(NSIndexPath *)indexPath
 {
@@ -184,7 +360,8 @@
     
     //消息数通知
     NSString *detailStr = [NSString stringWithFormat:@"%d条未读，共%d条", unreadMessageCount, [subData count]];
-    [CMNavBarNotificationView notifyWithText:@"已删除！" andDetail:detailStr];
+//    [CMNavBarNotificationView notifyWithText:@"已删除！" andDetail:detailStr];
+    [CMNavBarNotificationView notifyWithText:@"已删除！"  detail:detailStr andDuration:(0.8)];
     UILocalNotification *notification = [[UILocalNotification alloc] init];
     if (notification != nil) {
         notification.repeatInterval = 0;
@@ -194,6 +371,7 @@
         notification.alertAction = @"查看";
         [[UIApplication sharedApplication] presentLocalNotificationNow:notification];
     }
+    [notification release];
 }
 
 #pragma mark -
@@ -208,46 +386,48 @@
 
 - (void)requestFinished:(ASIHTTPRequest *)request
 {
-    NSLog(@"请求结束了");
-    [activityIndicator stopAnimating];
-    
-    
-    NSString *str = request.responseString;
-    if ([str length] == 0) {
-        NSLog(@"str为空！");
+    @autoreleasepool {
+        NSLog(@"请求结束了");
+        [activityIndicator stopAnimating];
+        
+        NSString *str = request.responseString;
+        if ([str length] == 0) {
+            NSLog(@"str为空！");
+        }
+        //NSLog(@"str is ---> %@",str);
+        
+        SBJSON *json = [[[SBJSON alloc] init] autorelease];
+        NSDictionary *dic = [json objectWithString:str];
+        //    NSLog(@"dic = %@",dic);
+        NSString *code = [dic objectForKey:@"code"];
+        NSString *msg = [dic objectForKey:@"msg"];
+        NSLog(@"code: %@", code);
+        if ([code intValue] == 0) {
+            NSDictionary *data = [[[NSDictionary alloc] initWithDictionary:[dic objectForKey:@"data"]] autorelease];
+            //        NSLog(@"\n消息内容：%@\n", data);
+            [User insertMessageContent:data];
+            [SVProgressHUD dismissWithSuccess:@"获取消息内容成功！"];
+            
+            //修改未读消息数提示
+            [UIApplication sharedApplication].applicationIconBadgeNumber --;
+            AppDelegate *app = (AppDelegate *)[UIApplication sharedApplication].delegate;
+            [[[app.tabBarController.tabBar items]objectAtIndex:0] setBadgeValue:[NSString stringWithFormat:@"%d", [UIApplication sharedApplication].applicationIconBadgeNumber]];
+            
+            MessageContent *messageContent = [[MessageContent alloc] initWithNibName:@"MessageContent" bundle:nil];
+            messageContent.title = [data objectForKey:@"title"];
+            NSString *includeTime = [[NSString stringWithString:[data objectForKey:@"include_time"]] substringToIndex:19];
+            NSString *content = [[NSString alloc] initWithFormat:@"<b><center><font size=4>%@</b></center></font><br>%@<br>%@", [data objectForKey:@"title"], includeTime, [data objectForKey:@"content"]];
+            messageContent.content = content;
+            [content release];
+            messageContent.hidesBottomBarWhenPushed = YES;
+            [self.navigationController pushViewController:messageContent animated:YES];
+            [self.tableView reloadData];
+            [messageContent release];
+        } else {
+            NSLog(@"msg: %@", msg);
+        }
+
     }
-    //NSLog(@"str is ---> %@",str);
-    
-    SBJSON *json = [[SBJSON alloc] init];
-    NSDictionary *dic = [json objectWithString:str];
-//    NSLog(@"dic = %@",dic);
-    NSString *code = [dic objectForKey:@"code"];
-    NSString *msg = [dic objectForKey:@"msg"];
-    NSLog(@"code: %@", code);
-    if ([code intValue] == 0) {
-        NSDictionary *data = [[NSDictionary alloc] initWithDictionary:[dic objectForKey:@"data"]];
-//        NSLog(@"\n消息内容：%@\n", data);
-        [User insertMessageContent:data];
-        [SVProgressHUD dismissWithSuccess:@"获取消息内容成功！"];
-        
-        //修改未读消息数提示
-        [UIApplication sharedApplication].applicationIconBadgeNumber --;
-        AppDelegate *app = (AppDelegate *)[UIApplication sharedApplication].delegate;
-        [[[app.tabBarController.tabBar items]objectAtIndex:0] setBadgeValue:[NSString stringWithFormat:@"%d", [UIApplication sharedApplication].applicationIconBadgeNumber]];
-        
-        MessageContent *messageContent = [[MessageContent alloc] initWithNibName:@"MessageContent" bundle:nil];
-        messageContent.title = [data objectForKey:@"title"];
-        NSString *includeTime = [[NSString stringWithString:[data objectForKey:@"include_time"]] substringToIndex:19];
-        NSString *content = [[NSString alloc] initWithFormat:@"<b><center><font size=4>%@</b></center></font><br>%@<br>%@", [data objectForKey:@"title"], includeTime, [data objectForKey:@"content"]];
-        messageContent.content = content;
-        messageContent.hidesBottomBarWhenPushed = YES;
-        [self.navigationController pushViewController:messageContent animated:YES];
-        [self.tableView reloadData];
-        
-    } else {
-        NSLog(@"msg: %@", msg);
-    }
-    
 }
 
 - (void)requestFailed:(ASIHTTPRequest *)request

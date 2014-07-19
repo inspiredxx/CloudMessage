@@ -8,7 +8,7 @@
 
 #import "User.h"
 #import <sqlite3.h>
-#import "ASIFormDataRequest.h"
+#import <ASIHTTPRequest/ASIHTTPRequestHeader.h>
 #import "PublicDefinition.h"
 #import "SBJSON.h"
 #import "AppDelegate.h"
@@ -53,47 +53,49 @@ static NSString *uid;
 
 - (id)init
 {
-    [super init];
-    _runtimeData = [[NSMutableDictionary alloc] init];
-    _isNeedToRefreshSubscription = NO;
-    _isNeedToSubscribe = YES;
-    _isInit = YES;
-    _isNeedToRefreshMessageData = NO;
-    uid = [[NSString alloc] initWithString:[[NSUserDefaults standardUserDefaults] objectForKey:UID]];
-    
-    //获取我的订阅
-    [self getMySubscription];
-    
-    //数据库初始化
-    sqlite3 *database;
-    NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
-    NSLog(@"paths: %@", [paths objectAtIndex:0]);
-    NSString *documents = [paths objectAtIndex:0];
-    NSString *databasePath = [documents stringByAppendingPathComponent:@"/CloudMessageDB.sqlite"];
+    self = [super init];
+    if (self) {
+        _runtimeData = [[NSMutableDictionary alloc] init];
+        _isNeedToRefreshSubscription = NO;
+        _isNeedToSubscribe = YES;
+        _isInit = YES;
+        _isNeedToRefreshMessageData = NO;
+        uid = [[NSString alloc] initWithString:[[NSUserDefaults standardUserDefaults] objectForKey:UID]];
+        
+        //获取我的订阅
+        [self getMySubscription];
+        
+        //数据库初始化
+        sqlite3 *database;
+        NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
+        NSLog(@"paths: %@", [paths objectAtIndex:0]);
+        NSString *documents = [paths objectAtIndex:0];
+        NSString *databasePath = [documents stringByAppendingPathComponent:@"/CloudMessageDB.sqlite"];
+        
+        if (sqlite3_open([databasePath UTF8String], &database) != SQLITE_OK) {
+            sqlite3_close(database);
+            NSLog(@"打开数据库失败！");
+        } else {
+            //建表
+            char *err;
+            NSString *sqlCreateTable1 = [[NSString alloc] initWithFormat:@"CREATE TABLE IF NOT EXISTS MESSAGEINFO_%@ (sn INTEGER, mid TEXT PRIMARY KEY, rid TEXT, title TEXT, include_time TEXT, abstract TEXT, read_flag BOOLEAN)", uid];
+            NSLog(@"\n%@\n", sqlCreateTable1);
+            if (sqlite3_exec(database, [sqlCreateTable1 UTF8String], NULL, NULL, &err) != SQLITE_OK) {
+                NSLog(@"创建消息信息表失败！");
+            } else {
+                NSLog(@"创建消息信息表成功！");
+            }
+            NSString *sqlCreateTable2 = [[NSString alloc] initWithFormat:@"CREATE TABLE IF NOT EXISTS MESSAGE_%@ (mid TEXT PRIMARY KEY, message BLOB)", uid];
+            if (sqlite3_exec(database, [sqlCreateTable2 UTF8String], NULL, NULL, &err) != SQLITE_OK) {
+                NSLog(@"创建消息内容表失败！");
+            } else {
+                NSLog(@"创建消息内容表成功！");
+            }
+            sqlite3_close(database);
+        }
+        
 
-    if (sqlite3_open([databasePath UTF8String], &database) != SQLITE_OK) {
-        sqlite3_close(database);
-        NSLog(@"打开数据库失败！");
-    } else {
-        //建表
-        char *err;
-        NSString *sqlCreateTable1 = [[NSString alloc] initWithFormat:@"CREATE TABLE IF NOT EXISTS MESSAGEINFO_%@ (sn INTEGER, mid TEXT PRIMARY KEY, rid TEXT, title TEXT, include_time TEXT, abstract TEXT, read_flag BOOLEAN)", uid];
-        NSLog(@"\n%@\n", sqlCreateTable1);
-        if (sqlite3_exec(database, [sqlCreateTable1 UTF8String], NULL, NULL, &err) != SQLITE_OK) {
-            NSLog(@"创建消息信息表失败！");
-        } else {
-            NSLog(@"创建消息信息表成功！");
-        }
-        NSString *sqlCreateTable2 = [[NSString alloc] initWithFormat:@"CREATE TABLE IF NOT EXISTS MESSAGE_%@ (mid TEXT PRIMARY KEY, message BLOB)", uid];
-        if (sqlite3_exec(database, [sqlCreateTable2 UTF8String], NULL, NULL, &err) != SQLITE_OK) {
-            NSLog(@"创建消息内容表失败！");
-        } else {
-            NSLog(@"创建消息内容表成功！");
-        }
-        sqlite3_close(database);
-    }
-    
-    return self;
+    }    return self;
 }
 
 - (void)getMySubscription
@@ -196,6 +198,7 @@ static NSString *uid;
     return self;
 }
 
+/*
 - (id)retain
 {
     return self;
@@ -215,6 +218,7 @@ static NSString *uid;
 {
     
 }
+*/
 
 + (NSArray *)subscriptionListData
 {
@@ -299,46 +303,48 @@ static NSString *uid;
 
 + (NSMutableArray *)getMessageInfoByLimit:(NSInteger)limit offset:(NSInteger)offset
 {
-    NSMutableArray *data = [[NSMutableArray alloc] init];
-    sqlite3 *database;
-    NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
-    NSString *documents = [paths objectAtIndex:0];
-    NSString *databasePath = [documents stringByAppendingPathComponent:@"/CloudMessageDB.sqlite"];
-    if (sqlite3_open([databasePath UTF8String], &database) != SQLITE_OK) {
-        NSLog(@"打开数据库失败！");
-    } else {
-//        NSString *sqlQuery = @"SELECT * FROM MESSAGEINFO WHERE sn >= startSn AND sn <= endSn ORDER BY sn DESC";
-        NSString *sqlQuery = [[NSString alloc] initWithFormat:@"SELECT * FROM MESSAGEINFO_%@ ORDER BY include_time LIMIT startSn OFFSET endSn", uid];
-        sqlQuery = [sqlQuery stringByReplacingOccurrencesOfString:@"startSn" withString:[NSString stringWithFormat:@"%d", limit]];
-        sqlQuery = [sqlQuery stringByReplacingOccurrencesOfString:@"endSn" withString:[NSString stringWithFormat:@"%d", offset]];
-        NSLog(@"\nsqlQuery: %@\n", sqlQuery);
-        sqlite3_stmt *statement;
-        if (sqlite3_prepare_v2(database, [sqlQuery UTF8String], -1, &statement, nil) == SQLITE_OK) {
-            while (sqlite3_step(statement) == SQLITE_ROW) {
-                //MESSAGEINFO (sn INTEGER PRIMARY KEY, mid TEXT, rid TEXT, title TEXT, include_time, TEXT, abstract TEXT, read_flag BOOLEAN)
-                char *sn = (char *)sqlite3_column_text(statement, 0);
-                NSString *snStr = [[NSString alloc] initWithUTF8String:sn];
-                char *mid = (char *)sqlite3_column_text(statement, 1);
-                NSString *midStr = [[NSString alloc] initWithUTF8String:mid];
-                char *rid = (char *)sqlite3_column_text(statement, 2);
-                NSString *ridStr = [[NSString alloc] initWithUTF8String:rid];
-                char *title = (char *)sqlite3_column_text(statement, 3);
-                NSString *titleStr = [[NSString alloc] initWithUTF8String:title];
-                char *includeTime = (char *)sqlite3_column_text(statement, 4);
-                NSString *includeTimeStr = [[NSString alloc] initWithUTF8String:includeTime];
-                char *abstract = (char *)sqlite3_column_text(statement, 5);
-                NSString *abstractStr = [[NSString alloc] initWithUTF8String:abstract];
-                char *readFlag = (char *)sqlite3_column_text(statement, 6);
-                NSString *readFlagStr = [[NSString alloc] initWithUTF8String:readFlag];
-                
-//                NSLog(@"\nGet Message Info:\nsn: %@\nmid: %@\nrid: %@\ntitle: %@\ninclude_time: %@\nabstract: %@\nreadFlag: %@\n", snStr, midStr, ridStr, titleStr, includeTimeStr, abstractStr, readFlagStr);
-                NSDictionary *dic = [[NSDictionary alloc] initWithObjects:@[midStr, ridStr, titleStr, includeTimeStr, abstractStr, readFlagStr] forKeys:@[@"mid", @"rid", @"title", @"include_time", @"abstract", @"read_flag"]];
-                [data addObject:dic];
+    @autoreleasepool {
+        NSMutableArray *data = [[NSMutableArray alloc] init];
+        sqlite3 *database;
+        NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
+        NSString *documents = [paths objectAtIndex:0];
+        NSString *databasePath = [documents stringByAppendingPathComponent:@"/CloudMessageDB.sqlite"];
+        if (sqlite3_open([databasePath UTF8String], &database) != SQLITE_OK) {
+            NSLog(@"打开数据库失败！");
+        } else {
+    //        NSString *sqlQuery = @"SELECT * FROM MESSAGEINFO WHERE sn >= startSn AND sn <= endSn ORDER BY sn DESC";
+            NSString *sqlQuery = [[NSString alloc] initWithFormat:@"SELECT * FROM MESSAGEINFO_%@ ORDER BY include_time LIMIT startSn OFFSET endSn", uid];
+            sqlQuery = [sqlQuery stringByReplacingOccurrencesOfString:@"startSn" withString:[NSString stringWithFormat:@"%d", limit]];
+            sqlQuery = [sqlQuery stringByReplacingOccurrencesOfString:@"endSn" withString:[NSString stringWithFormat:@"%d", offset]];
+            NSLog(@"\nsqlQuery: %@\n", sqlQuery);
+            sqlite3_stmt *statement;
+            if (sqlite3_prepare_v2(database, [sqlQuery UTF8String], -1, &statement, nil) == SQLITE_OK) {
+                while (sqlite3_step(statement) == SQLITE_ROW) {
+                    //MESSAGEINFO (sn INTEGER PRIMARY KEY, mid TEXT, rid TEXT, title TEXT, include_time, TEXT, abstract TEXT, read_flag BOOLEAN)
+//                    char *sn = (char *)sqlite3_column_text(statement, 0);
+//                    NSString *snStr = [[NSString alloc] initWithUTF8String:sn];
+                    char *mid = (char *)sqlite3_column_text(statement, 1);
+                    NSString *midStr = [[NSString alloc] initWithUTF8String:mid];
+                    char *rid = (char *)sqlite3_column_text(statement, 2);
+                    NSString *ridStr = [[NSString alloc] initWithUTF8String:rid];
+                    char *title = (char *)sqlite3_column_text(statement, 3);
+                    NSString *titleStr = [[NSString alloc] initWithUTF8String:title];
+                    char *includeTime = (char *)sqlite3_column_text(statement, 4);
+                    NSString *includeTimeStr = [[NSString alloc] initWithUTF8String:includeTime];
+                    char *abstract = (char *)sqlite3_column_text(statement, 5);
+                    NSString *abstractStr = [[NSString alloc] initWithUTF8String:abstract];
+                    char *readFlag = (char *)sqlite3_column_text(statement, 6);
+                    NSString *readFlagStr = [[NSString alloc] initWithUTF8String:readFlag];
+                    
+    //                NSLog(@"\nGet Message Info:\nsn: %@\nmid: %@\nrid: %@\ntitle: %@\ninclude_time: %@\nabstract: %@\nreadFlag: %@\n", snStr, midStr, ridStr, titleStr, includeTimeStr, abstractStr, readFlagStr);
+                    NSDictionary *dic = [[NSDictionary alloc] initWithObjects:@[midStr, ridStr, titleStr, includeTimeStr, abstractStr, readFlagStr] forKeys:@[@"mid", @"rid", @"title", @"include_time", @"abstract", @"read_flag"]];
+                    [data addObject:dic];
+                }
             }
         }
+        sqlite3_close(database);
+        return data;
     }
-    sqlite3_close(database);
-    return data;
 }
 
 + (NSMutableArray *)getMessageInfoByRid:(NSString *)rid
@@ -358,8 +364,8 @@ static NSString *uid;
         if (sqlite3_prepare_v2(database, [sqlQuery UTF8String], -1, &statement, nil) == SQLITE_OK) {
             while (sqlite3_step(statement) == SQLITE_ROW) {
                 //MESSAGEINFO (sn INTEGER PRIMARY KEY, mid TEXT, rid TEXT, title TEXT, include_time, TEXT, abstract TEXT, read_flag BOOLEAN)
-                char *sn = (char *)sqlite3_column_text(statement, 0);
-                NSString *snStr = [[NSString alloc] initWithUTF8String:sn];
+//                char *sn = (char *)sqlite3_column_text(statement, 0);
+//                NSString *snStr = [[NSString alloc] initWithUTF8String:sn];
                 char *mid = (char *)sqlite3_column_text(statement, 1);
                 NSString *midStr = [[NSString alloc] initWithUTF8String:mid];
                 char *rid = (char *)sqlite3_column_text(statement, 2);
@@ -410,7 +416,7 @@ static NSString *uid;
         } else {
             NSLog(@"\nSave blob error: %s\n", sqlite3_errmsg(database));
         }
-        [archiver release];
+//        [archiver release];
         sqlite3_finalize(statement);
     }
     sqlite3_close(database);
@@ -436,10 +442,11 @@ static NSString *uid;
                 int length = sqlite3_column_bytes(statement, 0);
                 data = [NSData dataWithBytes:sqlite3_column_blob(statement, 0) length:length];
                 NSKeyedUnarchiver *unarchiver = [[NSKeyedUnarchiver alloc] initForReadingWithData:data];
-                dic = [[unarchiver decodeObjectForKey:@"data"] retain];
+//                dic = [[unarchiver decodeObjectForKey:@"data"] retain];
+                dic = [unarchiver decodeObjectForKey:@"data"];
 //                NSLog(@"\ndic: %@\n", dic);
                 [unarchiver finishDecoding];
-                [unarchiver release];
+//                [unarchiver release];
             }
         } else {
             NSLog(@"\nGet blob error: %s\n", sqlite3_errmsg(database));
@@ -574,7 +581,7 @@ static NSString *uid;
         NSString *sql = [[NSString alloc] initWithFormat:@"SELECT COUNT (*) FROM MESSAGEINFO_%@", uid];
         NSLog(@"\nUser MessageInfoCount sql: %@\n", sql);
         sqlite3_stmt *statement = NULL;
-        if (sqlite3_prepare_v2(database, [sql UTF8String], -1, &statement, &err) != SQLITE_OK) {
+        if (sqlite3_prepare_v2(database, [sql UTF8String], -1, &statement, (const char **)&err) != SQLITE_OK) {
             NSString *errStr = [[NSString alloc] initWithUTF8String:err];
             NSLog(@"Err: %@", errStr);
         } else {
@@ -589,7 +596,7 @@ static NSString *uid;
         sql = [[NSString alloc] initWithFormat:@"SELECT COUNT (*) FROM MESSAGEINFO_%@ WHERE read_flag = 'false'", uid];
         NSLog(@"\nUser UnreadCount sql: %@\n", sql);
         statement = NULL;
-        if (sqlite3_prepare_v2(database, [sql UTF8String], -1, &statement, &err) != SQLITE_OK) {
+        if (sqlite3_prepare_v2(database, [sql UTF8String], -1, &statement, (const char **)&err) != SQLITE_OK) {
             NSString *errStr = [[NSString alloc] initWithUTF8String:err];
             NSLog(@"Err: %@", errStr);
         } else {

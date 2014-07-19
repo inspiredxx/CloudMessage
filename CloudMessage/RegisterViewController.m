@@ -8,7 +8,7 @@
 
 #import "RegisterViewController.h"
 #import "SVProgressHUD.h"
-#import "ASIFormDataRequest.h"
+#import <ASIHTTPRequest/ASIHTTPRequestHeader.h>
 #import "SBJSON.h"
 #import "PublicDefinition.h"
 
@@ -32,11 +32,11 @@
 {
     [super viewDidLoad];
     // Do any additional setup after loading the view from its nib.
-    [self.newPasswordTextField setDelegate:self];
-    [self.newUsernameTextField setDelegate:self];
+    [self.passwordTextField setDelegate:self];
+    [self.usernameTextField setDelegate:self];
     [self.repeatPasswordTextField setDelegate:self];
-    self.newUsernameTextField.tag = 1000;
-    self.newPasswordTextField.tag = 1001;
+    self.usernameTextField.tag = 1000;
+    self.passwordTextField.tag = 1001;
     self.repeatPasswordTextField.tag = 1002;
 }
 
@@ -47,24 +47,24 @@
 }
 
 - (IBAction)onSubmitBtnTouchUpInside:(UIButton *)sender {
-    if ([[self.newUsernameTextField text] isEqualToString:@""]) {
+    if ([[self.usernameTextField text] isEqualToString:@""]) {
         NSLog(@"用户名为空");
         [SVProgressHUD showErrorWithStatus:@"用户名不能为空"];
         return;
     }
-    if ([[self.newPasswordTextField text] isEqualToString:@""]) {
+    if ([[self.passwordTextField text] isEqualToString:@""]) {
         [SVProgressHUD showErrorWithStatus:@"密码不能为空"];
         return;
     }
-    if ([[self.newPasswordTextField text] isEqualToString:[self.repeatPasswordTextField text]]) {
+    if ([[self.passwordTextField text] isEqualToString:[self.repeatPasswordTextField text]]) {
         NSLog(@"注册");
         
         ASIFormDataRequest *request = [[ASIFormDataRequest alloc] initWithURL:[NSURL URLWithString:@"http://59.77.134.226:80/mobile_register"]];
         
         [request setRequestMethod:@"POST"];
         NSString *postBody = @"{\"email\":\"myEmail\",\"pwd\":\"myPwd\"}";
-        postBody = [postBody stringByReplacingOccurrencesOfString:@"myEmail" withString:[self.newUsernameTextField text]];
-        postBody = [postBody stringByReplacingOccurrencesOfString:@"myPwd" withString:[self.newPasswordTextField text]];
+        postBody = [postBody stringByReplacingOccurrencesOfString:@"myEmail" withString:[self.usernameTextField text]];
+        postBody = [postBody stringByReplacingOccurrencesOfString:@"myPwd" withString:[self.passwordTextField text]];
         NSLog(@"postBody: %@", postBody);
         [request setPostBody:(NSMutableData *)[postBody dataUsingEncoding:NSUTF8StringEncoding]];
         
@@ -87,12 +87,12 @@
 - (void)textFieldDidBeginEditing:(UITextField *)textField
 {    
     CGRect frame;
-    int offset;
+    int offset = 0;
     if (textField.tag == 1000) {
-        frame = self.newUsernameTextField.frame;
+        frame = self.usernameTextField.frame;
         offset = frame.origin.y + 32 - (self.view.frame.size.height - 216 - 100); //键盘高度216
     } else if (textField.tag == 1001) {
-        frame = self.newPasswordTextField.frame;
+        frame = self.passwordTextField.frame;
         offset = frame.origin.y + 32 - (self.view.frame.size.height - 216 - 50); //键盘高度216
     } else if (textField.tag == 1002) {
         frame = self.repeatPasswordTextField.frame;
@@ -115,10 +115,10 @@
     }];
     
     if (textField.tag == 1000) {
-        [self.newUsernameTextField resignFirstResponder];
+        [self.usernameTextField resignFirstResponder];
         
     } else if (textField.tag == 1001) {
-        [self.newPasswordTextField resignFirstResponder];
+        [self.passwordTextField resignFirstResponder];
     } else if (textField.tag == 1002) {
         [self.repeatPasswordTextField resignFirstResponder];
     }
@@ -160,8 +160,8 @@
         NSString *uid = [data objectForKey:@"uid"];
         NSLog(@"access_token: %@ uid:%@", accessToken, uid);
         //        [User setUser:[self.usernameTextField text] withPassword:[self.passwordTextField text] withAccessToken:accessToken withUid:uid];
-        [[NSUserDefaults standardUserDefaults] setObject:[self.newUsernameTextField text] forKey:USER_NAME];
-        [[NSUserDefaults standardUserDefaults] setObject:[self.newPasswordTextField text] forKey:PASSWORD];
+        [[NSUserDefaults standardUserDefaults] setObject:[self.usernameTextField text] forKey:USER_NAME];
+        [[NSUserDefaults standardUserDefaults] setObject:[self.passwordTextField text] forKey:PASSWORD];
         [[NSUserDefaults standardUserDefaults] setObject:accessToken forKey:ACCESS_TOKEN];
         [[NSUserDefaults standardUserDefaults] setObject:uid forKey:UID];
         [[NSUserDefaults standardUserDefaults] synchronize];

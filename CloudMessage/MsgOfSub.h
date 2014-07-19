@@ -7,10 +7,13 @@
 //
 
 #import <UIKit/UIKit.h>
+#import "EGORefreshTableHeaderView.h"
 
-@interface MsgOfSub : UITableViewController
+@interface MsgOfSub : UITableViewController <EGORefreshTableHeaderDelegate, NSURLConnectionDelegate>
 {
     UIActivityIndicatorView *activityIndicator;
+    EGORefreshTableHeaderView *_refreshHeaderView;
+    BOOL _reloading;
 }
 
 @property (nonatomic, assign) NSString *rid;

@@ -32,6 +32,7 @@
     float rating;
     //阅读过的页面高度
     float readHeight;
+    
 }
 
 @end
@@ -56,6 +57,7 @@
 //    titleLabel.text = self.title;
 //    self.navigationItem.titleView = titleLabel;
 //    NSLog(@"\nContent: %@\n", self.content);
+    
     [self.webView loadHTMLString:self.content baseURL:[NSURL fileURLWithPath:[[NSBundle mainBundle] bundlePath]]];
     [self.webView setDelegate:self];
     [self.webView.scrollView setDelegate:self];
@@ -94,14 +96,20 @@
 
 - (void)viewWillDisappear:(BOOL)animated
 {
+    [self.webView stopLoading];
+    [self.webView setDelegate:nil];
+    self.content = nil;
     [super viewWillDisappear:animated];
     [self hideTabBar:NO];
     [mainTimer invalidate];
     [subTimer invalidate];
     [dragTimer invalidate];
     [deceleratingTimer invalidate];
+    [draggingTimer invalidate];
     
-    if (self.webView.scrollView.contentSize.height <= 504) {
+//    NSLog(@"\nheight: %.0lf\n", self.webView.scrollView.contentSize.height);
+    
+    if (self.webView.scrollView.contentSize.height <= 504/*568-64*/) {
         //recount height 有可能更大
         readHeight = self.webView.scrollView.contentSize.height;
         readHeight = MIN(readHeight, [self flattenHTML:self.content trimWhiteSpace:YES].length * readHeight/400 + 40);
@@ -109,7 +117,7 @@
         isFullReading = YES;
     } else if (readHeight/self.webView.scrollView.contentSize.height >= 0.9) {
         isFullReading = YES;
-        NSLog(@"\nreadHeight>=0.9\n");
+//        NSLog(@"\nreadHeight>=0.9\n");
     }
     
     NSLog(@"\ntime height full decelerating drag rating\n%.1f %.0lf %d %d %d %.2lf\n",
@@ -164,7 +172,7 @@
 
 - (void)webViewDidFinishLoad:(UIWebView *)webView
 {
-    NSLog(@"\n加载完成\nreadingTime: %ds\n", readingTime);
+    NSLog(@"\n加载完成\nreadingTime: %.0lf\n", readingTime);
     [mainTimer invalidate];
     [subTimer invalidate];
     mainTimer = [NSTimer scheduledTimerWithTimeInterval:12 target:self selector:@selector(readingTimeCut) userInfo:nil repeats:NO];
@@ -183,6 +191,9 @@
     NSLog(@"\n12s\n");
     timerIsRunning = NO;
     [subTimer setFireDate:[NSDate distantFuture]];
+//    [self dismissViewControllerAnimated:YES completion:^{
+//        NSLog(@"\nOK\n");
+//    }];
 }
 
 //阅读时间累加
@@ -214,9 +225,10 @@
     NSLog(@"\n长时间dragging！\n");
     dragCount ++;
     
-    //开始拽动时的计时
+    //开始拖动时的计时
     [draggingTimer invalidate];
     draggingTimer = [NSTimer scheduledTimerWithTimeInterval:0.1 target:self selector:@selector(draggingTimeAdd) userInfo:nil repeats:YES];
+    [[NSRunLoop currentRunLoop] addTimer:draggingTimer forMode:NSRunLoopCommonModes];
 }
 
 //dragging计时累加
@@ -243,6 +255,7 @@
         [subTimer setFireDate:[NSDate distantPast]];
         timerIsRunning = YES;
     }
+//    NSLog(@"\nwillBeginDragging\n");
     [mainTimer invalidate];
     mainTimer = [NSTimer scheduledTimerWithTimeInterval:12 target:self selector:@selector(readingTimeCut) userInfo:nil repeats:NO];
     //还未加载完成，开始操作则开始计时
@@ -252,15 +265,17 @@
     }
     [dragTimer invalidate];
     [deceleratingTimer invalidate];
+    [draggingTimer invalidate];
     
-    NSThread *draggingTimerThread = [[NSThread alloc] initWithTarget:self selector:@selector(draggingTimerStart) object:nil];
-    [draggingTimerThread start];
+    draggingTimer = [NSTimer scheduledTimerWithTimeInterval:0.7 target:self selector:@selector(draggingTimeCut) userInfo:nil repeats:NO];
+    [[NSRunLoop currentRunLoop] addTimer:draggingTimer forMode:NSRunLoopCommonModes];
+
 }
 
 - (void)scrollViewDidEndDecelerating:(UIScrollView *)scrollView
 {
     [self calcReadHeight];
-    NSLog(@"\n滑动\n");
+//    NSLog(@"\n滑动\n");
     [dragTimer invalidate];
     deceleratingTimer = [NSTimer scheduledTimerWithTimeInterval:0.5 target:self selector:@selector(deceleratingTimeAdd) userInfo:nil repeats:NO];
 }
@@ -268,7 +283,7 @@
 - (void)scrollViewDidEndDragging:(UIScrollView *)scrollView willDecelerate:(BOOL)decelerate
 {
     [self calcReadHeight];
-    NSLog(@"\n拽动\n");
+//    NSLog(@"\n拖动\n");
     dragTimer = [NSTimer scheduledTimerWithTimeInterval:0.5 target:self selector:@selector(dragTimeAdd) userInfo:nil repeats:NO];
     [draggingTimer invalidate];
 }
@@ -279,7 +294,7 @@
     if ((self.webView.scrollView.contentSize.height > 504) && (isFullReading == false)) {
         readHeight = MAX(readHeight, self.webView.scrollView.contentOffset.y + 568);
         readHeight = MIN(readHeight, self.webView.scrollView.contentSize.height);
-        NSLog(@"\nreadHeight: %.0lf\n", readHeight);
+//        NSLog(@"\nreadHeight: %.0lf\n", readHeight);
     }
 }
 
@@ -360,6 +375,9 @@
 {
     [super didReceiveMemoryWarning];
     // Dispose of any resources that can be recreated.
+    NSLog(@"\nMem leaks!\n");
+    UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:@"MemoryWarning-messageContent" message:@"leaks!" delegate:self cancelButtonTitle:@"OK" otherButtonTitles:nil, nil];
+    [alertView show];
 }
 
 @end

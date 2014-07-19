@@ -360,7 +360,7 @@
             [UIView animateWithDuration:0.15
                                   delay:0
                                 options:UIViewAnimationOptionAllowUserInteraction | UIViewAnimationCurveEaseOut | UIViewAnimationOptionBeginFromCurrentState
-                             animations:^{	
+                             animations:^{
                                  self.hudView.transform = CGAffineTransformScale(self.hudView.transform, 1/1.3, 1/1.3);
                                  self.alpha = 1;
                              }

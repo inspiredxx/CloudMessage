@@ -41,8 +41,10 @@
  
     // Uncomment the following line to display an Edit button in the navigation bar for this view controller.
     // self.navigationItem.rightBarButtonItem = self.editButtonItem;
-    cellsData0 = [[NSArray alloc] initWithArray:@[@"注销登录", @"清空用户数据"]];
-    cellsData1 = [[NSArray alloc] initWithArray:@[@"上传行为数据", @"个性化推荐"]];
+//    cellsData0 = [[NSArray alloc] initWithArray:@[@"注销登录", @"清空用户数据"]];
+    cellsData0 = [NSArray arrayWithObjects:@"注销登录", @"清空用户数据", nil];
+//    cellsData1 = [[NSArray alloc] initWithArray:@[@"上传行为数据", @"个性化推荐"]];
+    cellsData1 = [NSArray arrayWithObjects:@"上传行为数据", @"个性化推荐", nil];
     switch0 = [[UISwitch alloc] initWithFrame:CGRectZero];
     switch1 = [[UISwitch alloc] initWithFrame:CGRectZero];
     switchArray = [[NSArray alloc] initWithObjects:switch0, switch1, nil];
@@ -174,7 +176,8 @@
             [[NSUserDefaults standardUserDefaults] removeObjectForKey:ACCESS_TOKEN];
             //        NSLog(@"\naccess_token: %@\n", [[NSUserDefaults standardUserDefaults] objectForKey:ACCESS_TOKEN]);
             [[NSUserDefaults standardUserDefaults] synchronize];
-            LoginViewController *loginViewController = [[[LoginViewController alloc] initWithNibName:@"LoginViewController" bundle:nil] autorelease];
+//            LoginViewController *loginViewController = [[[LoginViewController alloc] initWithNibName:@"LoginViewController" bundle:nil] autorelease];
+            LoginViewController *loginViewController = [[LoginViewController alloc] initWithNibName:@"LoginViewController" bundle:nil];
             [self presentViewController:loginViewController animated:YES completion:^{
                 NSLog(@"\nLogin VC\n");
             }];

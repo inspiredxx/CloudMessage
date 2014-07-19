@@ -183,8 +183,8 @@
 	
 	if (_state == EGOOPullRefreshLoading) {
 		
-		CGFloat offset = MAX(scrollView.contentOffset.y * -1, 0);
-		offset = MIN(offset, 60);
+//		CGFloat offset = MAX(scrollView.contentOffset.y * -1, 0);
+//		offset = MIN(offset, 60);
 		scrollView.contentInset = UIEdgeInsetsMake(64.0f, 0.0f, REFRESH_REGION_HEIGHT - 16, 0.0f);
 		
 	} else if (scrollView.isDragging) {

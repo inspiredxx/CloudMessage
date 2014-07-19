@@ -7,7 +7,8 @@
 //
 
 #import "MyMessage.h"
-#import "ASIFormDataRequest.h"
+//#import "ASIFormDataRequest.h"
+#import <ASIHTTPRequest/ASIHTTPRequestHeader.h>
 #import "SVProgressHUD.h"
 #import "SBJSON.h"
 #import "PublicDefinition.h"
@@ -30,6 +31,9 @@
     NSMutableDictionary *_userDefaultsDic;
     SINavigationMenuView *navBarMenu;
     NSInteger showIndex;
+    BOOL showCMNotificationFlag;    //判断是否正在接收中
+    //通知显示计时器
+    NSTimer *notificationTimer;
 }
 
 @end
@@ -55,6 +59,8 @@
     // Uncomment the following line to display an Edit button in the navigation bar for this view controller.
     // self.navigationItem.rightBarButtonItem = self.editButtonItem;
     
+    showCMNotificationFlag = YES;
+    
     //清空已有数据
     [[NSUserDefaults standardUserDefaults] removeObjectForKey:@"behaviorData"];
     [[NSUserDefaults standardUserDefaults] synchronize];
@@ -74,6 +80,7 @@
     if (accessToken == nil) {
         NSLog(@"\n登录\n");
         LoginViewController *loginViewController = [[[LoginViewController alloc] initWithNibName:@"LoginViewController" bundle:nil] autorelease];
+//        LoginViewController *loginViewController = [[LoginViewController alloc] initWithNibName:@"LoginViewController" bundle:nil];
         [self presentViewController:loginViewController animated:YES completion:^{
             NSLog(@"\nLogin VC\n");
             user = [User sharedUser];
@@ -166,11 +173,13 @@
     //若有未读资讯已经被阅读过则刷新
     if ([User isNeedToRefreshMessageData] == YES) {
         [User setMessageDataRefresh:NO];
+        if (_myMessageData != nil) {
+            [_myMessageData release];
+        }
         _myMessageData = [[NSMutableArray alloc] initWithArray:[User getMessageInfoByLimit: _messageCount-_messageIndex offset:_messageIndex]];
         [self distinguishData];
         [self.tableView reloadData];
     }
-
 }
 
 - (void)viewWillDisappear:(BOOL)animated
@@ -206,7 +215,8 @@
         _messageIndex -= [loadedData count];
         NSLog(@"\n_messageIndex: %d", _messageIndex);
     }
-    [self doneGettingTableViewData:loadedData];    
+    [self doneGettingTableViewData:loadedData];
+    [loadedData release];
 }
 
 - (void)doneGettingTableViewData:(NSArray *)data
@@ -235,55 +245,6 @@
     [_refreshFooterView removeFromSuperview];
     _refreshFooterView = nil;
 }
-
-#pragma mark
-#pragma Navigation hide Scroll
-/*
-- (void)scrollViewWillBeginDecelerating:(UIScrollView *)scrollView{
-    isDecelerating = YES;
-}
-
-- (void)scrollViewDidEndDecelerating:(UIScrollView *)scrollView{
-    isDecelerating = NO;
-}
-
-- (void)scrollViewDidScroll:(UIScrollView *)scrollView {
-    if(self.scrollForHideNavigation != scrollView)
-        return;
-    if(scrollView.frame.size.height >= scrollView.contentSize.height)
-        return;
-    
-    if(scrollView.contentOffset.y > -self.navigationController.navigationBar.frame.size.height && scrollView.contentOffset.y < 0)
-        scrollView.contentInset = UIEdgeInsetsMake(-scrollView.contentOffset.y, 0, 0, 0);
-    else if(scrollView.contentOffset.y >= 0)
-        scrollView.contentInset = UIEdgeInsetsMake(0, 0, 0, 0);
-    
-    if(lastOffsetY < scrollView.contentOffset.y && scrollView.contentOffset.y >= -self.navigationController.navigationBar.frame.size.height){//moving up
-        
-        if(self.navigationController.navigationBar.frame.size.height + self.navigationController.navigationBar.frame.origin.y  > 0){//not yet hidden
-            float newY = self.navigationController.navigationBar.frame.origin.y - (scrollView.contentOffset.y - lastOffsetY);
-            if(newY < -self.navigationController.navigationBar.frame.size.height)
-                newY = -self.navigationController.navigationBar.frame.size.height;
-            self.navigationController.navigationBar.frame = CGRectMake(self.navigationController.navigationBar.frame.origin.x,
-                                                                       newY,
-                                                                       self.navigationController.navigationBar.frame.size.width,
-                                                                       self.navigationController.navigationBar.frame.size.height);
-        }
-    }else
-        if(self.navigationController.navigationBar.frame.origin.y < [UIApplication sharedApplication].statusBarFrame.size.height  &&
-           (self.scrollForHideNavigation.contentSize.height > self.scrollForHideNavigation.contentOffset.y + self.scrollForHideNavigation.frame.size.height)){//not yet shown
-            float newY = self.navigationController.navigationBar.frame.origin.y + (lastOffsetY - scrollView.contentOffset.y);
-            if(newY > [UIApplication sharedApplication].statusBarFrame.size.height)
-                newY = [UIApplication sharedApplication].statusBarFrame.size.height;
-            self.navigationController.navigationBar.frame = CGRectMake(self.navigationController.navigationBar.frame.origin.x,
-                                                                       newY,
-                                                                       self.navigationController.navigationBar.frame.size.width,
-                                                                       self.navigationController.navigationBar.frame.size.height);
-        }
-    
-    lastOffsetY = scrollView.contentOffset.y;
-}
- */
 
 #pragma mark -
 #pragma mark UIScrollViewDelegate Methods
@@ -335,14 +296,6 @@
                 } else {
                     [view setFrame:CGRectMake(view.frame.origin.x, /*480*/568-49, view.frame.size.width, view.frame.size.height)];
                 }
-            }
-            else
-            {
-//                if (hidden) {
-//                    [view setFrame:CGRectMake(view.frame.origin.x, view.frame.origin.y, view.frame.size.width, 480)];
-//                } else {
-//                    [view setFrame:CGRectMake(view.frame.origin.x, view.frame.origin.y, view.frame.size.width, 480-49)];
-//                }
             }
         }];
     }
@@ -459,6 +412,9 @@
     }
     _messageCount --;
     [_myMessageData removeAllObjects];
+    if (_myMessageData != nil) {
+        [_myMessageData release];
+    }
     _myMessageData = [[NSMutableArray alloc] initWithArray:[User getMessageInfoByLimit:_messageCount-_messageIndex offset:_messageIndex]];
     //按照时间排序
     [_myMessageData sortUsingComparator:^NSComparisonResult(NSDictionary *obj1, NSDictionary *obj2) {
@@ -490,6 +446,7 @@
         notification.alertAction = @"查看";
         [[UIApplication sharedApplication] presentLocalNotificationNow:notification];
     }
+    [notification release];
 }
 
 /*
@@ -535,69 +492,198 @@
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
 {
-    //获取消息具体内容
-    NSMutableArray *messageData = nil;
-    if (showIndex == 0) {
-        messageData = _myMessageData;
-    } else if (showIndex == 1) {
-        messageData = _unReadMessageData;
-    } else if (showIndex == 2) {
-        messageData = _readedMessageData;
-    }
-    if ([[[messageData objectAtIndex:[indexPath row]] objectForKey:@"read_flag"]  isEqual: @"true"]) {
-        //从数据库读取消息
-        NSDictionary *data = [User getMessageContentByMid:[[messageData objectAtIndex:[indexPath row]] objectForKey:@"mid"]];
-        if (data == nil) {
-            NSLog(@"\nNot found in DB\n\n");
-            //重新下载
-            goto Download;
+    @autoreleasepool {
+        //获取消息具体内容
+        NSMutableArray *messageData = nil;
+        if (showIndex == 0) {
+            messageData = _myMessageData;
+        } else if (showIndex == 1) {
+            messageData = _unReadMessageData;
+        } else if (showIndex == 2) {
+            messageData = _readedMessageData;
         }
+        
+        if ([[[messageData objectAtIndex:[indexPath row]] objectForKey:@"read_flag"] isEqual: @"true"]) {
+            //从数据库读取消息
+            NSDictionary *data = [User getMessageContentByMid:[[messageData objectAtIndex:[indexPath row]] objectForKey:@"mid"]];
+            if (data == nil) {
+                NSLog(@"\nNot found in DB\n\n");
+                //重新下载
+                goto Download;
+            }
+            [self pushContent:data];
+
+        } else {
+        Download:
+            ////////////////////////////////////////
+            NSLog(@"\n下载消息具体内容\n");
+            NSString *urlString=@"http://59.77.134.226:80/mobile_get_message_by_mid";
+            urlString = [urlString stringByAddingPercentEscapesUsingEncoding: NSUTF8StringEncoding];
+            NSMutableURLRequest *requestA = [[NSMutableURLRequest alloc] init];
+            [requestA setURL:[NSURL URLWithString: urlString]];
+            [requestA setCachePolicy:NSURLRequestReloadIgnoringCacheData];
+            [requestA setTimeoutInterval: 60];
+            [requestA setHTTPShouldHandleCookies:FALSE];
+            [requestA setHTTPMethod:@"POST"];
+            NSString *postBodyA = @"{\"mid\":\"myMid\"}";
+            postBodyA = [postBodyA stringByReplacingOccurrencesOfString:@"myMid" withString:[[messageData objectAtIndex:[indexPath row]] objectForKey:@"mid"]];
+            [requestA setHTTPBody:[postBodyA dataUsingEncoding:NSUTF8StringEncoding]];
+            NSURLConnection *aSynConnection = nil;
+            // 在协议方法中，通过判断aSynConnection，来区分，是哪一个异步请求的返回数据。
+            aSynConnection = [[NSURLConnection alloc] initWithRequest:requestA delegate:self];
+            
+            //标记为已读
+            NSString *readFlagA = @"true";
+            NSMutableDictionary *objA = [[NSMutableDictionary alloc] initWithDictionary:[messageData objectAtIndex:[indexPath row]]];
+            NSLog(@"\nObj: %@\n", objA);
+            [objA removeObjectForKey:@"read_flag"];
+            [objA setObject:readFlagA forKey:@"read_flag"];
+            for (NSDictionary *obj1 in _myMessageData) {
+                if ([[obj1 objectForKey:@"mid"] isEqualToString:[objA objectForKey:@"mid"]]) {
+                    [_myMessageData removeObject:obj1];
+                    [_myMessageData addObject:objA];
+                    break;
+                }
+            }
+            //          [_myMessageData replaceObjectAtIndex:[indexPath row] withObject:obj];
+            [self distinguishData];
+            //修改数据库数据标记为已读
+            NSLog(@"\nUpdate: %@\n", objA);
+            [User updateMessageContentByMid:[objA objectForKey:@"mid"] forField:@"read_flag" withValue:@"true"];
+            [objA release];
+            
+            return ;
+            ////////////////////////////////////////
+            
+            
+            //未读消息
+            NSLog(@"\n下载消息具体内容\n");
+            ASIFormDataRequest *request = [[ASIFormDataRequest alloc] initWithURL:[NSURL URLWithString:@"http://59.77.134.226:80/mobile_get_message_by_mid"]];
+            //定时关闭request
+//            NSTimer *requestTimer = [NSTimer scheduledTimerWithTimeInterval:10 target:self selector:@selector(onRequestTimer:) userInfo:request repeats:NO];
+            [request setRequestMethod:@"POST"];
+            NSString *postBody = @"{\"mid\":\"myMid\"}";
+            postBody = [postBody stringByReplacingOccurrencesOfString:@"myMid" withString:[[messageData objectAtIndex:[indexPath row]] objectForKey:@"mid"]];
+            
+            NSLog(@"postBody: %@", postBody);
+            [request setPostBody:(NSMutableData *)[postBody dataUsingEncoding:NSUTF8StringEncoding]];
+            
+            request.delegate = self;
+            [request startAsynchronous];
+            //标记为已读
+            NSString *readFlag = @"true";
+            NSMutableDictionary *obj = [[NSMutableDictionary alloc] initWithDictionary:[messageData objectAtIndex:[indexPath row]]];
+            NSLog(@"\nObj: %@\n", obj);
+            [obj removeObjectForKey:@"read_flag"];
+            [obj setObject:readFlag forKey:@"read_flag"];
+            for (NSDictionary *obj1 in _myMessageData) {
+                if ([[obj1 objectForKey:@"mid"] isEqualToString:[obj objectForKey:@"mid"]]) {
+                    [_myMessageData removeObject:obj1];
+                    [_myMessageData addObject:obj];
+                    break;
+                }
+            }
+            [self distinguishData];
+            //修改数据库数据标记为已读
+            NSLog(@"\nUpdate: %@\n", obj);
+            [User updateMessageContentByMid:[obj objectForKey:@"mid"] forField:@"read_flag" withValue:@"true"];
+        }
+    }
+}
+
+#pragma mark- NSURLConnectionDelegate
+
+- (void)connection:(NSURLConnection *)connection didReceiveResponse:(NSURLResponse *)aResponse
+{
+    NSLog(@"请求成功！");
+    [activityIndicator startAnimating];
+    [SVProgressHUD showWithStatus:@"正在获取消息内容"];
+}
+
+- (void)connection:(NSURLConnection *)connection didReceiveData:(NSData *)data
+{
+    NSLog(@"\nA\n");
+    
+    NSLog(@"请求结束了");
+    [activityIndicator stopAnimating];
+    
+    @autoreleasepool {
+        NSString *str = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
+//    NSLog(@"\ndata: %@", str);
+        if ([str length] == 0) {
+            NSLog(@"str为空！");
+        }
+        SBJSON *json = [[[SBJSON alloc] init] autorelease];
+        NSDictionary *dic = [json objectWithString:str];
+        NSString *code = [dic objectForKey:@"code"];
+        NSString *msg = [dic objectForKey:@"msg"];
+        NSLog(@"code: %@", code);
+        if ([code intValue] == 0) {
+            _unreadMessageCount --;
+            //IconBadge
+            AppDelegate *app = (AppDelegate *)[UIApplication sharedApplication].delegate;
+            if (_unreadMessageCount < 1) {
+                //没有未读消息
+                [[[app.tabBarController.tabBar items]objectAtIndex:0] setBadgeValue:nil];
+                
+                [UIApplication sharedApplication].applicationIconBadgeNumber = nil;
+            } else {
+                [[[app.tabBarController.tabBar items]objectAtIndex:0] setBadgeValue:[NSString stringWithFormat:@"%d", _unreadMessageCount]];
+                
+                [UIApplication sharedApplication].applicationIconBadgeNumber = _unreadMessageCount;
+            }
+            NSDictionary *content = [[[NSDictionary alloc] initWithDictionary:[dic objectForKey:@"data"]] autorelease];
+            //保存到数据库
+            [User insertMessageContent:content];
+            [self pushContent:content];
+            [SVProgressHUD dismissWithSuccess:@"获取消息内容成功！"];
+            
+            [self.tableView reloadData];
+        } else {
+            NSLog(@"msg: %@", msg);
+        }
+
+    }
+}
+
+- (void)connection:(NSURLConnection *)connection didFailWithError:(NSError *)error
+{
+    NSLog(@"didFailWithError");
+}
+
+- (void)connectionDidFinishLoading:(NSURLConnection *)connection
+{
+
+}
+
+- (void)onRequestTimer:(NSTimer *)timer
+{
+    ASIFormDataRequest *request = (ASIFormDataRequest *)timer.userInfo;
+    [request clearDelegatesAndCancel];
+}
+
+//将messageContentVC Push
+- (void)pushContent:(NSDictionary *)data
+{
+    @autoreleasepool {
         MessageContent *messageContent = [[MessageContent alloc] initWithNibName:@"MessageContent" bundle:nil];
         messageContent.title = [data objectForKey:@"title"];
         messageContent.hidesBottomBarWhenPushed = YES;
         NSString *includeTime = [[NSString stringWithString:[data objectForKey:@"include_time"]] substringToIndex:19];
         NSString *content = [[NSString alloc] initWithFormat:@"<b><center><font size=4>%@</b></center></font><br>%@<br>%@", [data objectForKey:@"title"], includeTime, [data objectForKey:@"content"]];
+        //          NSString *content = [[NSString alloc] initWithFormat:@"<b><center><font size=4>%@</b></center></font><br>%@<br>%@", [data objectForKey:@"title"], includeTime, [data objectForKey:@"content"]];
         messageContent.content = content;
+        [content release];
         [self.navigationController pushViewController:messageContent animated:YES];
-    } else {
-    Download:
-        //未读消息
-        NSLog(@"\n下载消息具体内容\n");
-        ASIFormDataRequest *request = [[ASIFormDataRequest alloc] initWithURL:[NSURL URLWithString:@"http://59.77.134.226:80/mobile_get_message_by_mid"]];
-        
-        [request setRequestMethod:@"POST"];
-        NSString *postBody = @"{\"mid\":\"myMid\"}";
-        postBody = [postBody stringByReplacingOccurrencesOfString:@"myMid" withString:[[messageData objectAtIndex:[indexPath row]] objectForKey:@"mid"]];
-        
-        NSLog(@"postBody: %@", postBody);
-        [request setPostBody:(NSMutableData *)[postBody dataUsingEncoding:NSUTF8StringEncoding]];
-        
-        request.delegate = self;
-        [request startAsynchronous];
-        //标记为已读
-        NSString *readFlag = [[NSString alloc] initWithString:@"true"];
-        NSMutableDictionary *obj = [[NSMutableDictionary alloc] initWithDictionary:[messageData objectAtIndex:[indexPath row]]];
-        NSLog(@"\nObj: %@\n", obj);
-        [obj removeObjectForKey:@"read_flag"];
-        [obj setObject:readFlag forKey:@"read_flag"];
-        for (NSDictionary *obj1 in _myMessageData) {
-            if ([[obj1 objectForKey:@"mid"] isEqualToString:[obj objectForKey:@"mid"]]) {
-                [_myMessageData removeObject:obj1];
-                [_myMessageData addObject:obj];
-                break;
-            }
-        }
-//        [_myMessageData replaceObjectAtIndex:[indexPath row] withObject:obj];
-        [self distinguishData];
-        //修改数据库数据标记为已读
-        NSLog(@"\nUpdate: %@\n", obj);
-        [User updateMessageContentByMid:[obj objectForKey:@"mid"] forField:@"read_flag" withValue:@"true"];
+        NSLog(@"\n%@\n", self.navigationController.description);
+        [messageContent release];
     }
 }
 
 - (void)application:(UIApplication *)application didReceiveLocalNotification:(UILocalNotification *)notification
 {
     [notification release];
+    NSLog(@"\ndidReceiveLocalNotification\n");
 }
 
 #pragma mark - Mosquitto client delegate
@@ -622,63 +708,68 @@
     NSInteger unreadMsgCnt = [(NSString *)timer.userInfo intValue];
     if (unreadMsgCnt != _unreadMessageCount) {
         //还在接收
-        NSTimer *notificationTimer = [NSTimer scheduledTimerWithTimeInterval:0.5 target:self selector:@selector(onNotificationTimer:) userInfo:[NSString stringWithFormat:@"%d", _unreadMessageCount] repeats:NO];
-        [SVProgressHUD showWithStatus:@"正在接收..."];
-    } else {
-        [SVProgressHUD dismiss];
-        //未读消息通知
-        NSString *detailStr = [NSString stringWithFormat:@"您有%d条未读消息", _unreadMessageCount];
-        [CMNavBarNotificationView notifyWithText:@"新消息！" detail:detailStr andDuration:2];
-
-        UILocalNotification *notification = [[UILocalNotification alloc] init];
-        if (notification != nil) {
-            notification.repeatInterval = 0;
-            notification.timeZone = [NSTimeZone defaultTimeZone];
-            notification.soundName = UILocalNotificationDefaultSoundName;
-            notification.alertBody = detailStr;
-            notification.alertAction = @"查看";
-            [[UIApplication sharedApplication] presentLocalNotificationNow:notification];
+        if ([notificationTimer isValid]) {
+            [notificationTimer invalidate];
+            notificationTimer = nil;
+            NSLog(@"\nnotificationTimer invalidate\n");
         }
+        notificationTimer = [NSTimer scheduledTimerWithTimeInterval:0.8 target:self selector:@selector(onNotificationTimer:) userInfo:[NSString stringWithFormat:@"%d", _unreadMessageCount] repeats:NO];
+//        [[NSRunLoop currentRunLoop] addTimer:notificationTimer forMode:NSRunLoopCommonModes];
+    } else {
+        
+        NSLog(@"\nwill showNotification\n");
+        if ([notificationTimer isValid]) {
+            [notificationTimer invalidate];
+            notificationTimer = nil;
+        }
+        showCMNotificationFlag = YES;
+        [self showNotification];
+        [SVProgressHUD dismiss];
     }
 }
 
+- (void)showNotification
+{
+    NSLog(@"\nshowNotification\n");
+    //未读消息通知
+    NSString *detailStr = [NSString stringWithFormat:@"您有%d条未读消息", _unreadMessageCount];
+    [CMNavBarNotificationView notifyWithText:@"新消息！" detail:detailStr andDuration:2];
+    
+    UILocalNotification *notification = [[[UILocalNotification alloc] init] autorelease];
+    if (notification != nil) {
+        notification.repeatInterval = 0;
+        notification.timeZone = [NSTimeZone defaultTimeZone];
+        notification.soundName = UILocalNotificationDefaultSoundName;
+        notification.alertBody = detailStr;
+        notification.alertAction = @"查看";
+        [[UIApplication sharedApplication] presentLocalNotificationNow:notification];
+    }
+}
+
+//接收到推送数据
 - (void) didReceiveMessage: (MosquittoMessage*)mosq_msg
 {
     NSLog(@"\nReceive!!!!!!!!\n");
     _messageCount ++;
     _unreadMessageCount ++;
     
-    NSTimer *notificationTimer = [NSTimer scheduledTimerWithTimeInterval:0.5 target:self selector:@selector(onNotificationTimer:) userInfo:[NSString stringWithFormat:@"%d", _unreadMessageCount] repeats:NO];
-    [SVProgressHUD showWithStatus:@"正在接收..."];
-    
-//    //未读消息通知
-//    NSString *detailStr = [NSString stringWithFormat:@"您有%d条未读消息", _unreadMessageCount];
-//
-//    if (showCMNotificationFlag == YES) {
-//        [CMNavBarNotificationView notifyWithText:@"新消息！" detail:detailStr andDuration:2];
-//        showCMNotificationFlag = FALSE;
-//        //设定时器，定时打开通知显示开关
-//        NSTimer *cmFlagTimer = [NSTimer scheduledTimerWithTimeInterval:1.99 target:self selector:@selector(onCMFlagTimer) userInfo:nil repeats:NO];
-//    }
-//    UILocalNotification *notification = [[UILocalNotification alloc] init];
-//    if (notification != nil) {
-//        notification.repeatInterval = 0;
-//        notification.timeZone = [NSTimeZone defaultTimeZone];
-//        notification.soundName = UILocalNotificationDefaultSoundName;
-//        notification.alertBody = detailStr;
-//        notification.alertAction = @"查看";
-//        [[UIApplication sharedApplication] presentLocalNotificationNow:notification];
-//    }
+    if (showCMNotificationFlag == YES) {
+        notificationTimer = [NSTimer scheduledTimerWithTimeInterval:0.2 target:self selector:@selector(onNotificationTimer:) userInfo:[NSString stringWithFormat:@"%d", _unreadMessageCount] repeats:NO];
+//        [[NSRunLoop currentRunLoop] addTimer:notificationTimer forMode:NSRunLoopCommonModes];
+        [SVProgressHUD showWithStatus:@"正在接收..."];
+        showCMNotificationFlag = NO;
+    }
     NSLog(@"\nMessage count: %d\n", _messageCount);
     NSLog(@"\nMessage: %@\n", mosq_msg.payload);
-    SBJSON *json = [[[SBJSON alloc] init] autorelease];
+    SBJSON *json = [[SBJSON alloc] init];
     NSMutableDictionary *data = [[NSMutableDictionary alloc] initWithDictionary:[json objectWithString:mosq_msg.payload]];
-
+    
     //未读标记
     NSString *readFlag = [[NSString alloc] initWithString:@"false"];
     [data setObject:readFlag forKey:@"read_flag"];
     //新消息信息写进数据库
     [User insertMessageInfoBySn:_messageCount-1 message:data];
+//        [readFlag release];
     [_myMessageData addObject:data];
     [_myMessageData sortUsingComparator:^NSComparisonResult(NSDictionary *obj1, NSDictionary *obj2) {
         if ([[obj1 objectForKey:@"include_time"] compare:[obj2 objectForKey:@"include_time"]] == NSOrderedDescending) {
@@ -687,18 +778,23 @@
             return NSOrderedDescending;
         }
     }];
-    [self distinguishData];
+    
+    //IconBadge
     [UIApplication sharedApplication].applicationIconBadgeNumber = _unreadMessageCount;
     AppDelegate *app = (AppDelegate *)[UIApplication sharedApplication].delegate;
     [[[app.tabBarController.tabBar items]objectAtIndex:0] setBadgeValue:[NSString stringWithFormat:@"%d", _unreadMessageCount]];
     
-    [_userDefaultsDic setObject:[NSString stringWithFormat:@"%d", _messageCount] forKey:MESSAGE_COUNT];
-    [_userDefaultsDic setObject:[NSString stringWithFormat:@"%d", _unreadMessageCount] forKey:UNREAD_MESSAGE_COUNT];
-    [[NSUserDefaults standardUserDefaults] setObject:_userDefaultsDic forKey:[User getUid]];
-    [[NSUserDefaults standardUserDefaults] synchronize];
+//    [_userDefaultsDic setObject:[NSString stringWithFormat:@"%d", _messageCount] forKey:MESSAGE_COUNT];
+//    [_userDefaultsDic setObject:[NSString stringWithFormat:@"%d", _unreadMessageCount] forKey:UNREAD_MESSAGE_COUNT];
+//    [[NSUserDefaults standardUserDefaults] setObject:_userDefaultsDic forKey:[User getUid]];
+//    [[NSUserDefaults standardUserDefaults] synchronize];
     
     [self distinguishData];
     [self.tableView reloadData];
+    
+    [data release];
+    [json release];
+    [readFlag release];
 }
 
 - (void) didSubscribe: (NSUInteger)messageId grantedQos:(NSArray*)qos
@@ -723,58 +819,55 @@
 
 - (void)requestFinished:(ASIHTTPRequest *)request
 {
-    NSLog(@"请求结束了");
-    [activityIndicator stopAnimating];
-    
-    NSString *str = request.responseString;
-    if ([str length] == 0) {
-        NSLog(@"str为空！");
-    }
-    
-    SBJSON *json = [[[SBJSON alloc] init] autorelease];
-    NSDictionary *dic = [json objectWithString:str];
-    NSString *code = [dic objectForKey:@"code"];
-    NSString *msg = [dic objectForKey:@"msg"];
-    NSLog(@"code: %@", code);
-    if ([code intValue] == 0) {
-        _unreadMessageCount --;
-        AppDelegate *app = (AppDelegate *)[UIApplication sharedApplication].delegate;
-        if (_unreadMessageCount < 1) {
-            //没有未读消息
-            [[[app.tabBarController.tabBar items]objectAtIndex:0] setBadgeValue:nil];
-            
-            [UIApplication sharedApplication].applicationIconBadgeNumber = nil;
-        } else {
-            [[[app.tabBarController.tabBar items]objectAtIndex:0] setBadgeValue:[NSString stringWithFormat:@"%d", _unreadMessageCount]];
-            
-            [UIApplication sharedApplication].applicationIconBadgeNumber = _unreadMessageCount;
+    @autoreleasepool {
+        NSLog(@"请求结束了");
+        [activityIndicator stopAnimating];
+        
+        NSString *str = request.responseString;
+        if ([str length] == 0) {
+            NSLog(@"str为空！");
         }
-        NSDictionary *data = [[NSDictionary alloc] initWithDictionary:[dic objectForKey:@"data"]];
-//        NSLog(@"\n消息内容：%@\n", data);
-        //保存到数据库
-        [User insertMessageContent:data];
         
-        [SVProgressHUD dismissWithSuccess:@"获取消息内容成功！"];
-        
-        MessageContent *messageContent = [[MessageContent alloc] initWithNibName:@"MessageContent" bundle:nil];
-        messageContent.title = [data objectForKey:@"title"];
-        NSString *includeTime = [[NSString stringWithString:[data objectForKey:@"include_time"]] substringToIndex:19];
-        NSString *content = [[NSString alloc] initWithFormat:@"<b><center><font size=4>%@</b></center></font><br>%@<br>%@", [data objectForKey:@"title"], includeTime, [data objectForKey:@"content"]];
-        messageContent.content = content;
-        messageContent.hidesBottomBarWhenPushed = YES;
-        [self.navigationController pushViewController:messageContent animated:YES];
-        [self.tableView reloadData];
+        SBJSON *json = [[[SBJSON alloc] init] autorelease];
+        //    SBJSON *json = [[SBJSON alloc] init];
+        NSDictionary *dic = [json objectWithString:str];
+        NSString *code = [dic objectForKey:@"code"];
+        NSString *msg = [dic objectForKey:@"msg"];
+        NSLog(@"code: %@", code);
+        if ([code intValue] == 0) {
+            _unreadMessageCount --;
+            AppDelegate *app = (AppDelegate *)[UIApplication sharedApplication].delegate;
+            if (_unreadMessageCount < 1) {
+                //没有未读消息
+                [[[app.tabBarController.tabBar items]objectAtIndex:0] setBadgeValue:nil];
+                
+                [UIApplication sharedApplication].applicationIconBadgeNumber = nil;
+            } else {
+                [[[app.tabBarController.tabBar items]objectAtIndex:0] setBadgeValue:[NSString stringWithFormat:@"%d", _unreadMessageCount]];
+                
+                [UIApplication sharedApplication].applicationIconBadgeNumber = _unreadMessageCount;
+            }
+            NSDictionary *data = [[[NSDictionary alloc] initWithDictionary:[dic objectForKey:@"data"]] autorelease];
+            //        NSDictionary *data = [[NSDictionary alloc] initWithDictionary:[dic objectForKey:@"data"]];
+            //        NSLog(@"\n消息内容：%@\n", data);
+            //保存到数据库
+            [User insertMessageContent:data];
+            
+            [self pushContent:data];
+            
+            [SVProgressHUD dismissWithSuccess:@"获取消息内容成功！"];
 
-    } else {
-        NSLog(@"msg: %@", msg);
+            [self.tableView reloadData];
+        } else {
+            NSLog(@"msg: %@", msg);
+        }
     }
 }
 
 - (void)requestFailed:(ASIHTTPRequest *)request
 {
-    
     NSLog(@"请求失败了");
-    //    NSLog([[request error] localizedDescription]);
+    NSLog(@"\n%@\n", [[request error] localizedDescription]);
 }
 
 @end

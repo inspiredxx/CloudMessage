@@ -7,7 +7,7 @@
 //
 
 #import "DetailViewController.h"
-#import "ASIFormDataRequest.h"
+#import <ASIHTTPRequest/ASIHTTPRequestHeader.h>
 #import "SBJSON.h"
 #import "SVProgressHUD.h"
 #import "PublicDefinition.h"
@@ -69,7 +69,8 @@
     NSLog(@"\ncid: %@\n", self.cid);
     NSLog(@"获取分类源信息！");
     ASIFormDataRequest *request;
-    NSString *postBody = [[NSString alloc] init];
+    NSString *postBody = nil;
+//    postBody = [[NSString alloc] init];
     if (self.level == 2) {
         request = [[ASIFormDataRequest alloc] initWithURL:[NSURL URLWithString:@"http://59.77.134.226:80/mobile_get_category_by_pid"]];
         postBody = @"{\"pid\":\"myPid\"}";
@@ -336,7 +337,8 @@
     }
     //NSLog(@"str is ---> %@",str);
     
-    SBJSON *json = [[[SBJSON alloc] init] autorelease];
+//    SBJSON *json = [[[SBJSON alloc] init] autorelease];
+    SBJSON *json = [[SBJSON alloc] init];
     NSDictionary *dic = [json objectWithString:str];
 //    NSLog(@"dic = %@",dic);
     

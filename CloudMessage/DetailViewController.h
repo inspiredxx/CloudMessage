@@ -10,7 +10,7 @@
 #import "User.h"
 #import "EGORefreshTableHeaderView.h"
 
-@interface DetailViewController : UITableViewController <UITableViewDataSource, UITableViewDelegate, UIAlertViewDelegate>
+@interface DetailViewController : UITableViewController <UITableViewDataSource, UITableViewDelegate, UIAlertViewDelegate, EGORefreshTableHeaderDelegate>
 {
     UIActivityIndicatorView *activityIndicator;
     NSArray *_resourceData;

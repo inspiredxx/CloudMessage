@@ -10,7 +10,7 @@
 #import "User.h"
 #import "EGORefreshTableHeaderView.h"
 
-@interface SubscriptionList : UITableViewController <EGORefreshTableDelegate>
+@interface SubscriptionList : UITableViewController <EGORefreshTableHeaderDelegate>
 {
     UIActivityIndicatorView *activityIndicator;
 //    User *user;

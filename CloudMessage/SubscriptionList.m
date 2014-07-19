@@ -9,7 +9,7 @@
 #import "SubscriptionList.h"
 #import "PublicDefinition.h"
 #import "SBJSON.h"
-#import "ASIFormDataRequest.h"
+#import <ASIHTTPRequest/ASIHTTPRequestHeader.h>
 #import "SVProgressHUD.h"
 #import "DetailViewController.h"
 
@@ -76,7 +76,7 @@
 {
     [super didReceiveMemoryWarning];
     // Dispose of any resources that can be recreated.
-    NSLog(@"\nMemoryWarning!\n");
+    NSLog(@"\nMemoryWarning!-sList\n");
 }
 
 #pragma mark -
@@ -136,11 +136,11 @@
             }
             else
             {
-                //                if (hidden) {
-                //                    [view setFrame:CGRectMake(view.frame.origin.x, view.frame.origin.y, view.frame.size.width, 480)];
-                //                } else {
-                //                    [view setFrame:CGRectMake(view.frame.origin.x, view.frame.origin.y, view.frame.size.width, 480-49)];
-                //                }
+//                if (hidden) {
+//                    [view setFrame:CGRectMake(view.frame.origin.x, view.frame.origin.y, view.frame.size.width, 480)];
+//                } else {
+//                    [view setFrame:CGRectMake(view.frame.origin.x, view.frame.origin.y, view.frame.size.width, 480-49)];
+//                }
             }
         }];
     }
@@ -247,7 +247,7 @@
     detailVC.cid = [[_subscriptionListData objectAtIndex:indexPath.row] objectForKey:@"_id"];
     detailVC.level = 2;
     [self.navigationController pushViewController:detailVC animated:YES];
-
+    [detailVC release];
 }
 
 #pragma mark -

@@ -8,7 +8,7 @@
 
 #import "LoginViewController.h"
 #import "SBJSON.h"
-#import "ASIFormDataRequest.h"
+#import <ASIHTTPRequest/ASIHTTPRequestHeader.h>
 #import "SVProgressHUD.h"
 #import "RegisterViewController.h"
 #import "PublicDefinition.h"
@@ -90,7 +90,7 @@
 {
 
     CGRect frame;
-    int offset;
+    int offset = 0;
     if (textField.tag == 1000) {
         //用户名框
         frame = self.usernameTextField.frame;

@@ -7,7 +7,7 @@
 //
 
 #import "MySubscription.h"
-#import "ASIFormDataRequest.h"
+#import <ASIHTTPRequest/ASIHTTPRequestHeader.h>
 #import "SVProgressHUD.h"
 #import "SBJSON.h"
 #import "PublicDefinition.h"
@@ -360,6 +360,7 @@
     } else {
         NSLog(@"msg: %@", msg);
     }
+    [dic release];
 }
 
 - (void)subscribingFromMosqServer

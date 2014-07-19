@@ -73,6 +73,7 @@ static NSNumber *kNegativeInfinity;
 }
 
 - (void)dealloc {
+    [super dealloc];
     self.state = nil;
 }
 
