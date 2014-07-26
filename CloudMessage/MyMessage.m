@@ -25,7 +25,6 @@
     NSInteger _messageCount;
     NSInteger _unreadMessageCount;
     NSInteger _messageIndex;
-    BOOL flag;
     CGFloat lastOffsetY;
     BOOL isDecelerating;
     NSMutableDictionary *_userDefaultsDic;
@@ -98,15 +97,6 @@
     NSArray *messageCountArray = [NSArray arrayWithArray:[User getMessageCount]];
     NSLog(@"\nMessage count: %d\nUnread count: %d\n", [[messageCountArray objectAtIndex:0] intValue], [[messageCountArray objectAtIndex:1] intValue]);
     
-    //读取用户配置
-    //    _userDefaultsDic = [[NSMutableDictionary alloc] initWithDictionary:[[NSUserDefaults standardUserDefaults] objectForKey:[User getUid]]];
-    //读取消息数目
-    //    if ([_userDefaultsDic objectForKey:MESSAGE_COUNT] == nil) {
-    //        _messageCount = 0;
-    //    } else {
-    //        _messageCount = [[_userDefaultsDic objectForKey:MESSAGE_COUNT] intValue];
-    //        NSLog(@"\nMessage count: %d\n", _messageCount);
-    //    }
     _messageCount = [[messageCountArray objectAtIndex:0] intValue];
     _messageIndex = MAX(0, _messageCount-25);
     
@@ -122,26 +112,13 @@
     }];
     [self distinguishData];
     
-    //初始化未读消息数目
-    //    if ([_userDefaultsDic objectForKey:UNREAD_MESSAGE_COUNT] == nil) {
-    //        _unreadMessageCount = 0;
-    //        [UIApplication sharedApplication].applicationIconBadgeNumber = nil;
-    //    } else {
-    //        _unreadMessageCount = [[_userDefaultsDic objectForKey:UNREAD_MESSAGE_COUNT] intValue];
-    //        if (_unreadMessageCount > 0) {
-    //            AppDelegate *app = (AppDelegate *)[UIApplication sharedApplication].delegate;
-    //            [[[app.tabBarController.tabBar items]objectAtIndex:0] setBadgeValue:[NSString stringWithFormat:@"%d", _unreadMessageCount]];
-    //            [UIApplication sharedApplication].applicationIconBadgeNumber = _unreadMessageCount;
-    //        }
-    //    }
     _unreadMessageCount = [[messageCountArray objectAtIndex:1] intValue];
+    //Badge
     if (_unreadMessageCount > 0){
         AppDelegate *app = (AppDelegate *)[UIApplication sharedApplication].delegate;
         [[[app.tabBarController.tabBar items]objectAtIndex:0] setBadgeValue:[NSString stringWithFormat:@"%d", _unreadMessageCount]];
         [UIApplication sharedApplication].applicationIconBadgeNumber = _unreadMessageCount;
     }
-    
-    flag = YES;
 }
 
 //整理未读、已读资讯
@@ -185,13 +162,6 @@
 - (void)viewWillDisappear:(BOOL)animated
 {
     [super viewWillDisappear:animated];
-//    NSLog(@"\nSave message count: %d\n", _messageCount);
-//    [_userDefaultsDic setObject:[NSString stringWithFormat:@"%d", _messageCount] forKey:MESSAGE_COUNT];
-//    NSLog(@"\nSave unread message count: %d\n", _unreadMessageCount);
-//    [_userDefaultsDic setObject:[NSString stringWithFormat:@"%d", _unreadMessageCount] forKey:UNREAD_MESSAGE_COUNT];
-//    [_userDefaultsDic setObject:_myMessageData forKey:MY_SUBSCRIPTION];
-//    [[NSUserDefaults standardUserDefaults] setObject:_userDefaultsDic forKey:[User getUid]];
-//    [[NSUserDefaults standardUserDefaults] synchronize];
 }
 
 - (void)didReceiveMemoryWarning
@@ -209,7 +179,6 @@
     NSArray *loadedData = nil;
     if (_messageIndex > 0) {
         _isLoading = YES;
-//        _messageIndex = MAX(0, _messageIndex - 25);
         loadedData = [[NSArray alloc] initWithArray:[User getMessageInfoByLimit:_messageIndex-MAX(0, _messageIndex-25) offset:MAX(0, _messageIndex-25)]];
         
         _messageIndex -= [loadedData count];
@@ -251,8 +220,6 @@
 
 - (void)scrollViewWillBeginDragging:(UIScrollView *)scrollView
 {
-//    NSLog(@"\nscroll content: %f\n", scrollView.contentSize.height);
-//    NSLog(@"\nTableView ContentSize: %f\n", self.tableView.contentSize.height);
     [self hideTabBar:YES];
     CGFloat height = MAX(self.tableView.contentSize.height, self.tableView.frame.size.height);
     if (_refreshFooterView == nil) {
@@ -425,14 +392,13 @@
         }
     }];
     [self distinguishData];
-//    _messageCount = [_myMessageData count];
     NSLog(@"\n_messageCount: %d\n", _messageCount);
     [self.tableView reloadData];
     //保存消息数
-    [_userDefaultsDic setObject:[NSString stringWithFormat:@"%d", _unreadMessageCount] forKey:UNREAD_MESSAGE_COUNT];
-    [_userDefaultsDic setObject:[NSString stringWithFormat:@"%d", _messageCount] forKey:MESSAGE_COUNT];
-    [[NSUserDefaults standardUserDefaults] setObject:_userDefaultsDic forKey:[User getUid]];
-    [[NSUserDefaults standardUserDefaults] synchronize];
+//    [_userDefaultsDic setObject:[NSString stringWithFormat:@"%d", _unreadMessageCount] forKey:UNREAD_MESSAGE_COUNT];
+//    [_userDefaultsDic setObject:[NSString stringWithFormat:@"%d", _messageCount] forKey:MESSAGE_COUNT];
+//    [[NSUserDefaults standardUserDefaults] setObject:_userDefaultsDic forKey:[User getUid]];
+//    [[NSUserDefaults standardUserDefaults] synchronize];
     
     //消息数通知
     NSString *detailStr = [NSString stringWithFormat:@"%d条未读，共%d条", _unreadMessageCount, _messageCount];
@@ -515,6 +481,8 @@
 
         } else {
         Download:
+            
+            /*
             ////////////////////////////////////////
             NSLog(@"\n下载消息具体内容\n");
             NSString *urlString=@"http://59.77.134.226:80/mobile_get_message_by_mid";
@@ -554,13 +522,13 @@
             
             return ;
             ////////////////////////////////////////
+             */
             
             
             //未读消息
             NSLog(@"\n下载消息具体内容\n");
             ASIFormDataRequest *request = [[ASIFormDataRequest alloc] initWithURL:[NSURL URLWithString:@"http://59.77.134.226:80/mobile_get_message_by_mid"]];
-            //定时关闭request
-//            NSTimer *requestTimer = [NSTimer scheduledTimerWithTimeInterval:10 target:self selector:@selector(onRequestTimer:) userInfo:request repeats:NO];
+
             [request setRequestMethod:@"POST"];
             NSString *postBody = @"{\"mid\":\"myMid\"}";
             postBody = [postBody stringByReplacingOccurrencesOfString:@"myMid" withString:[[messageData objectAtIndex:[indexPath row]] objectForKey:@"mid"]];
@@ -618,6 +586,13 @@
         NSString *code = [dic objectForKey:@"code"];
         NSString *msg = [dic objectForKey:@"msg"];
         NSLog(@"code: %@", code);
+        if (code == nil) {
+            NSLog(@"\ncode nil!\n");
+            NSLog(@"dic: %@\n", dic);
+            NSLog(@"str: %@\n", str);
+            [SVProgressHUD dismissWithSuccess:@"获取消息内容失败！"];
+            return ;
+        }
         if ([code intValue] == 0) {
             _unreadMessageCount --;
             //IconBadge
@@ -712,9 +687,9 @@
             [notificationTimer invalidate];
             notificationTimer = nil;
             NSLog(@"\nnotificationTimer invalidate\n");
+            [SVProgressHUD showWithStatus:@"正在接收..."];
         }
         notificationTimer = [NSTimer scheduledTimerWithTimeInterval:0.8 target:self selector:@selector(onNotificationTimer:) userInfo:[NSString stringWithFormat:@"%d", _unreadMessageCount] repeats:NO];
-//        [[NSRunLoop currentRunLoop] addTimer:notificationTimer forMode:NSRunLoopCommonModes];
     } else {
         
         NSLog(@"\nwill showNotification\n");
@@ -755,8 +730,6 @@
     
     if (showCMNotificationFlag == YES) {
         notificationTimer = [NSTimer scheduledTimerWithTimeInterval:0.2 target:self selector:@selector(onNotificationTimer:) userInfo:[NSString stringWithFormat:@"%d", _unreadMessageCount] repeats:NO];
-//        [[NSRunLoop currentRunLoop] addTimer:notificationTimer forMode:NSRunLoopCommonModes];
-        [SVProgressHUD showWithStatus:@"正在接收..."];
         showCMNotificationFlag = NO;
     }
     NSLog(@"\nMessage count: %d\n", _messageCount);
@@ -783,11 +756,6 @@
     [UIApplication sharedApplication].applicationIconBadgeNumber = _unreadMessageCount;
     AppDelegate *app = (AppDelegate *)[UIApplication sharedApplication].delegate;
     [[[app.tabBarController.tabBar items]objectAtIndex:0] setBadgeValue:[NSString stringWithFormat:@"%d", _unreadMessageCount]];
-    
-//    [_userDefaultsDic setObject:[NSString stringWithFormat:@"%d", _messageCount] forKey:MESSAGE_COUNT];
-//    [_userDefaultsDic setObject:[NSString stringWithFormat:@"%d", _unreadMessageCount] forKey:UNREAD_MESSAGE_COUNT];
-//    [[NSUserDefaults standardUserDefaults] setObject:_userDefaultsDic forKey:[User getUid]];
-//    [[NSUserDefaults standardUserDefaults] synchronize];
     
     [self distinguishData];
     [self.tableView reloadData];
@@ -848,8 +816,7 @@
                 [UIApplication sharedApplication].applicationIconBadgeNumber = _unreadMessageCount;
             }
             NSDictionary *data = [[[NSDictionary alloc] initWithDictionary:[dic objectForKey:@"data"]] autorelease];
-            //        NSDictionary *data = [[NSDictionary alloc] initWithDictionary:[dic objectForKey:@"data"]];
-            //        NSLog(@"\n消息内容：%@\n", data);
+
             //保存到数据库
             [User insertMessageContent:data];
             

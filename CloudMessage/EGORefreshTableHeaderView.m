@@ -214,7 +214,6 @@
 	}
 	
 	if (scrollView.contentOffset.y <= - 130.0f && !_loading) {
-
 		
 		[self setState:EGOOPullRefreshLoading];
         //Loading...
@@ -235,9 +234,8 @@
 	[self setState:EGOOPullRefreshNormal];
 	[UIView beginAnimations:nil context:NULL];
 	[UIView setAnimationDuration:0.3];
-	[scrollView setContentInset:UIEdgeInsetsMake(65.0f, 0.0f, 0.0f, 0.0f)];
+	[scrollView setContentInset:UIEdgeInsetsMake(65.0f, 0.0f, 48.0f, 0.0f)];
 	[UIView commitAnimations];
-
 }
 
 

@@ -18,11 +18,11 @@
     NSTimer *mainTimer;
     //阅读粒度计时器
     NSTimer *subTimer;
-    //有效拽动判断计时器
+    //有效拖动判断计时器
     NSTimer *dragTimer;
     //有效滑动判断计时器
     NSTimer *deceleratingTimer;
-    //长时间拽动计时器
+    //长时间拖动计时器
     NSTimer *draggingTimer;
     float readingTime;
     NSInteger dragCount;
@@ -98,7 +98,6 @@
 {
     [self.webView stopLoading];
     [self.webView setDelegate:nil];
-    self.content = nil;
     [super viewWillDisappear:animated];
     [self hideTabBar:NO];
     [mainTimer invalidate];
@@ -212,11 +211,11 @@
     NSLog(@"\n有效滑动%d次\n", deceleratingCount);
 }
 
-//拽动次数累加
+//拖动次数累加
 - (void)dragTimeAdd
 {
     dragCount ++;
-    NSLog(@"\n有效拽动%d次\n", dragCount);
+    NSLog(@"\n有效拖动%d次\n", dragCount);
 }
 
 //dragging计时截停
@@ -240,14 +239,13 @@
     }
 }
 
-- (void)draggingTimerStart
-{
-    NSRunLoop *runLoop = [NSRunLoop currentRunLoop];
-    [draggingTimer invalidate];
-    draggingTimer = [NSTimer scheduledTimerWithTimeInterval:0.7 target:self selector:@selector(draggingTimeCut) userInfo:nil repeats:NO];
-    [runLoop run];
-}
-
+//- (void)draggingTimerStart
+//{
+//    NSRunLoop *runLoop = [NSRunLoop currentRunLoop];
+//    [draggingTimer invalidate];
+//    draggingTimer = [NSTimer scheduledTimerWithTimeInterval:0.7 target:self selector:@selector(draggingTimeCut) userInfo:nil repeats:NO];
+//    [runLoop run];
+//}
 
 - (void)scrollViewWillBeginDragging:(UIScrollView *)scrollView
 {

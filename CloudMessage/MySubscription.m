@@ -360,7 +360,7 @@
     } else {
         NSLog(@"msg: %@", msg);
     }
-    [dic release];
+//    [dic release];
 }
 
 - (void)subscribingFromMosqServer
