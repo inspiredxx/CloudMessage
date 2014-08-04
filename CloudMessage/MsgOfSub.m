@@ -49,7 +49,8 @@
 - (void)getDataFromDB
 {
     if (subData != nil) {
-        [subData release];
+//        [subData release];
+        subData = nil;
     }
     subData = [[NSMutableArray alloc] initWithArray:[User getMessageInfoByRid:self.rid]];
     //按照时间排序
@@ -66,6 +67,7 @@
 {
     [super didReceiveMemoryWarning];
     // Dispose of any resources that can be recreated.
+    NSLog(@"\nMemWarning: MsgOfSub\n");
 }
 
 #pragma mark -
@@ -189,9 +191,9 @@
         NSString *includeTime = [[NSString stringWithString:[data objectForKey:@"include_time"]] substringToIndex:19];
         NSString *content = [[NSString alloc] initWithFormat:@"<b><center><font size=4>%@</b></center></font><br>%@<br>%@", [data objectForKey:@"title"], includeTime, [data objectForKey:@"content"]];
         messageContent.content = content;
-        [content release];
+//        [content release];
         [self.navigationController pushViewController:messageContent animated:YES];
-        [messageContent release];
+//        [messageContent release];
     } else {
     Download:
         /*
@@ -231,7 +233,8 @@
         
         //未读消息
         NSLog(@"\n下载消息具体内容\n");
-        ASIFormDataRequest *request = [[[ASIFormDataRequest alloc] initWithURL:[NSURL URLWithString:@"http://59.77.134.226:80/mobile_get_message_by_mid"]] autorelease];
+//        ASIFormDataRequest *request = [[[ASIFormDataRequest alloc] initWithURL:[NSURL URLWithString:@"http://59.77.134.226:80/mobile_get_message_by_mid"]] autorelease];
+        ASIFormDataRequest *request = [[ASIFormDataRequest alloc] initWithURL:[NSURL URLWithString:@"http://59.77.134.226:80/mobile_get_message_by_mid"]];
         
         [request setRequestMethod:@"POST"];
         NSString *postBody = @"{\"mid\":\"myMid\"}";
@@ -249,13 +252,13 @@
         [obj removeObjectForKey:@"read_flag"];
         [obj setObject:readFlag forKey:@"read_flag"];
         [subData replaceObjectAtIndex:[indexPath row] withObject:obj];
-        [readFlag release];
+//        [readFlag release];
         //修改数据库数据标记为已读
         NSLog(@"\nUpdate: %@\n", obj);
         [User updateMessageContentByMid:[obj objectForKey:@"mid"] forField:@"read_flag" withValue:@"true"];
         //设置最新资讯页面数据刷新标记
         [User setMessageDataRefresh:YES];
-        [obj release];
+//        [obj release];
     }
 }
 
@@ -280,13 +283,15 @@
         if ([str length] == 0) {
             NSLog(@"str为空！");
         }
-        SBJSON *json = [[[SBJSON alloc] init] autorelease];
+//        SBJSON *json = [[[SBJSON alloc] init] autorelease];
+        SBJSON *json = [[SBJSON alloc] init];
         NSDictionary *dic = [json objectWithString:str];
         NSString *code = [dic objectForKey:@"code"];
         NSString *msg = [dic objectForKey:@"msg"];
         NSLog(@"code: %@", code);
         if ([code intValue] == 0) {
-            NSDictionary *data = [[[NSDictionary alloc] initWithDictionary:[dic objectForKey:@"data"]] autorelease];
+//            NSDictionary *data = [[[NSDictionary alloc] initWithDictionary:[dic objectForKey:@"data"]] autorelease];
+            NSDictionary *data = [[NSDictionary alloc] initWithDictionary:[dic objectForKey:@"data"]];
             //        NSLog(@"\n消息内容：%@\n", data);
             [User insertMessageContent:data];
             [SVProgressHUD dismissWithSuccess:@"获取消息内容成功！"];
@@ -301,10 +306,10 @@
             NSString *includeTime = [[NSString stringWithString:[data objectForKey:@"include_time"]] substringToIndex:19];
             NSString *content = [[NSString alloc] initWithFormat:@"<b><center><font size=4>%@</b></center></font><br>%@<br>%@", [data objectForKey:@"title"], includeTime, [data objectForKey:@"content"]];
             messageContent.content = content;
-            [content release];
+//            [content release];
             messageContent.hidesBottomBarWhenPushed = YES;
             [self.navigationController pushViewController:messageContent animated:YES];
-            [messageContent release];
+//            [messageContent release];
             [self.tableView reloadData];
         } else {
             NSLog(@"msg: %@", msg);
@@ -371,7 +376,7 @@
         notification.alertAction = @"查看";
         [[UIApplication sharedApplication] presentLocalNotificationNow:notification];
     }
-    [notification release];
+//    [notification release];
 }
 
 #pragma mark -
@@ -396,14 +401,16 @@
         }
         //NSLog(@"str is ---> %@",str);
         
-        SBJSON *json = [[[SBJSON alloc] init] autorelease];
+//        SBJSON *json = [[[SBJSON alloc] init] autorelease];
+        SBJSON *json = [[SBJSON alloc] init];
         NSDictionary *dic = [json objectWithString:str];
         //    NSLog(@"dic = %@",dic);
         NSString *code = [dic objectForKey:@"code"];
         NSString *msg = [dic objectForKey:@"msg"];
         NSLog(@"code: %@", code);
         if ([code intValue] == 0) {
-            NSDictionary *data = [[[NSDictionary alloc] initWithDictionary:[dic objectForKey:@"data"]] autorelease];
+//            NSDictionary *data = [[[NSDictionary alloc] initWithDictionary:[dic objectForKey:@"data"]] autorelease];
+            NSDictionary *data = [[NSDictionary alloc] initWithDictionary:[dic objectForKey:@"data"]];
             //        NSLog(@"\n消息内容：%@\n", data);
             [User insertMessageContent:data];
             [SVProgressHUD dismissWithSuccess:@"获取消息内容成功！"];
@@ -418,11 +425,11 @@
             NSString *includeTime = [[NSString stringWithString:[data objectForKey:@"include_time"]] substringToIndex:19];
             NSString *content = [[NSString alloc] initWithFormat:@"<b><center><font size=4>%@</b></center></font><br>%@<br>%@", [data objectForKey:@"title"], includeTime, [data objectForKey:@"content"]];
             messageContent.content = content;
-            [content release];
+//            [content release];
             messageContent.hidesBottomBarWhenPushed = YES;
             [self.navigationController pushViewController:messageContent animated:YES];
             [self.tableView reloadData];
-            [messageContent release];
+//            [messageContent release];
         } else {
             NSLog(@"msg: %@", msg);
         }

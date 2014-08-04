@@ -511,29 +511,31 @@ static NSString *uid;
 
 + (void)updateMessageContentByMid:(NSString *) mid forField:(NSString *)field withValue:(NSString *)value
 {
-    sqlite3 *database;
-    NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
-    NSString *documents = [paths objectAtIndex:0];
-    NSString *databasePath = [documents stringByAppendingPathComponent:@"/CloudMessageDB.sqlite"];
-    if (sqlite3_open([databasePath UTF8String], &database) != SQLITE_OK) {
-        NSLog(@"打开数据库失败！");
-    } else {
-        //MESSAGEINFO (sn INTEGER PRIMARY KEY, mid TEXT, rid TEXT, title TEXT, include_time, TEXT, abstract TEXT, read_flag BOOLEAN)
-        NSString *sql = [NSString stringWithFormat:@"UPDATE MESSAGEINFO_%@ SET field = 'myValue' WHERE mid = 'myMid'", uid];
-        sql = [sql stringByReplacingOccurrencesOfString:@"field" withString:field];
-        sql = [sql stringByReplacingOccurrencesOfString:@"myValue" withString:value];
-        sql = [sql stringByReplacingOccurrencesOfString:@"myMid" withString:mid];
-        
-        char *err;
-        if (sqlite3_exec(database, [sql UTF8String], NULL, NULL, &err) != SQLITE_OK) {
-            NSLog(@"\nUpdate error！\nsql: %@\n", sql);
-            NSString *errStr = [[NSString alloc] initWithUTF8String:err];
-            NSLog(@"Err: %@", errStr);
+    @autoreleasepool {
+        sqlite3 *database;
+        NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
+        NSString *documents = [paths objectAtIndex:0];
+        NSString *databasePath = [documents stringByAppendingPathComponent:@"/CloudMessageDB.sqlite"];
+        if (sqlite3_open([databasePath UTF8String], &database) != SQLITE_OK) {
+            NSLog(@"打开数据库失败！");
         } else {
-            NSLog(@"\n修改数据成功\n");
+            //MESSAGEINFO (sn INTEGER PRIMARY KEY, mid TEXT, rid TEXT, title TEXT, include_time, TEXT, abstract TEXT, read_flag BOOLEAN)
+            NSString *sql = [NSString stringWithFormat:@"UPDATE MESSAGEINFO_%@ SET field = 'myValue' WHERE mid = 'myMid'", uid];
+            sql = [sql stringByReplacingOccurrencesOfString:@"field" withString:field];
+            sql = [sql stringByReplacingOccurrencesOfString:@"myValue" withString:value];
+            sql = [sql stringByReplacingOccurrencesOfString:@"myMid" withString:mid];
+            
+            char *err;
+            if (sqlite3_exec(database, [sql UTF8String], NULL, NULL, &err) != SQLITE_OK) {
+                NSLog(@"\nUpdate error！\nsql: %@\n", sql);
+                NSString *errStr = [[NSString alloc] initWithUTF8String:err];
+                NSLog(@"Err: %@", errStr);
+            } else {
+                NSLog(@"\n修改数据成功\n");
+            }
         }
+        sqlite3_close(database);
     }
-    sqlite3_close(database);
 }
 
 + (void)emptyDataBase

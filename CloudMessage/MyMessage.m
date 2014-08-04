@@ -648,6 +648,7 @@
         NSString *content = [[NSString alloc] initWithFormat:@"<b><center><font size=4>%@</b></center></font><br>%@<br>%@", [data objectForKey:@"title"], includeTime, [data objectForKey:@"content"]];
         //          NSString *content = [[NSString alloc] initWithFormat:@"<b><center><font size=4>%@</b></center></font><br>%@<br>%@", [data objectForKey:@"title"], includeTime, [data objectForKey:@"content"]];
         messageContent.content = content;
+        messageContent._id = [data objectForKey:@"_id"];
         [content release];
         [self.navigationController pushViewController:messageContent animated:YES];
         NSLog(@"\n%@\n", self.navigationController.description);

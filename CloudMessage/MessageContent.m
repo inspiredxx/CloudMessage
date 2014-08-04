@@ -30,8 +30,12 @@
     BOOL timerIsRunning;
     BOOL isFullReading;
     float rating;
+    //阅读区域高度
+    float readHt;
     //阅读过的页面高度
     float readHeight;
+    //阅读时长超时阈值
+    float readTimeThreshold;
     
 }
 
@@ -57,6 +61,30 @@
 //    titleLabel.text = self.title;
 //    self.navigationItem.titleView = titleLabel;
 //    NSLog(@"\nContent: %@\n", self.content);
+
+    
+    //修改图片宽度
+    NSString *jsStr = @"<script type=\"text/javascript\">\n\
+    function resizepic(thispic)\n\
+    {\n\
+        if(thispic.width>304) thispic.width=304;\n\
+    }\n</script>\n<body>\n";
+    self.content = [jsStr stringByAppendingString:self.content];
+//    self.content = [self.content stringByReplacingOccurrencesOfString:@"<img" withString:@"<img style=\"width:304px;\" "];
+    self.content = [self.content stringByReplacingOccurrencesOfString:@"<img" withString:@"<img onload=\"javascript:resizepic(this)\" "];
+    self.content = [self.content stringByReplacingOccurrencesOfString:@"<IMG" withString:@"<img onload=\"javascript:resizepic(this)\" "];
+    
+//    [self.content stringByReplacingOccurrencesOfString:@"<img" withString:@"<img onload=\"javascript:resizepic(this)\" " options:NSWidthInsensitiveSearch range:NSMakeRange(0, self.content.length)];
+    
+    
+    NSString *metaStr = @"<html>\n";
+    self.content = [metaStr stringByAppendingString:self.content];
+    self.content = [self.content stringByAppendingString:@"\n</body>\n</html>"];
+    
+    NSLog(@"\ncontent:\n%@\n", self.content);
+    
+    readTimeThreshold = 12;
+    readHt = [UIScreen mainScreen].applicationFrame.size.height - self.navigationController.navigationBar.frame.size.height;
     
     [self.webView loadHTMLString:self.content baseURL:[NSURL fileURLWithPath:[[NSBundle mainBundle] bundlePath]]];
     [self.webView setDelegate:self];
@@ -91,7 +119,7 @@
     isFullReading = NO;
     rating = 0;
 
-    readHeight = 504;
+    readHeight = readHt;
 }
 
 - (void)viewWillDisappear:(BOOL)animated
@@ -108,10 +136,14 @@
     
 //    NSLog(@"\nheight: %.0lf\n", self.webView.scrollView.contentSize.height);
     
-    if (self.webView.scrollView.contentSize.height <= 504/*568-64*/) {
+    if (self.webView.scrollView.contentSize.height <= readHt/*568-64*/) {
         //recount height 有可能更大
         readHeight = self.webView.scrollView.contentSize.height;
         readHeight = MIN(readHeight, [self flattenHTML:self.content trimWhiteSpace:YES].length * readHeight/400 + 40);
+        if ([self.content rangeOfString:@"<img "].length > 0) {
+            //包含图片
+            readHeight += 228;
+        }
         NSLog(@"\nRecount height: %.2lf\n", readHeight);
         isFullReading = YES;
     } else if (readHeight/self.webView.scrollView.contentSize.height >= 0.9) {
@@ -119,13 +151,17 @@
 //        NSLog(@"\nreadHeight>=0.9\n");
     }
     
-    NSLog(@"\ntime height full decelerating drag rating\n%.1f %.0lf %d %d %d %.2lf\n",
+    NSString *dateStr = [self fixStringForDate:[NSDate date]];
+    
+    NSLog(@"\ntime height full decelerating drag rating date\n%.1f %.0lf %d %d %d %.2lf %@ %@\n",
           readingTime,
           readHeight,
           isFullReading,
           deceleratingCount,
           dragCount,
-          rating);
+          rating,
+          dateStr,
+          self._id);
     
     if (rating != 0) {
         //保存行为数据
@@ -137,7 +173,7 @@
             [behaviorDataArray addObjectsFromArray:[[NSUserDefaults standardUserDefaults] objectForKey:@"behaviorDataArray"]];
         }
 
-        NSString *userBehaviorData = [[NSString alloc] initWithFormat:@"%.1f %.0lf %d %d %d %.2lf\n", readingTime, readHeight, isFullReading, deceleratingCount, dragCount, rating];
+        NSString *userBehaviorData = [[NSString alloc] initWithFormat:@"%.1f %.0lf %d %d %d %.2lf %@ %@\n", readingTime, readHeight, isFullReading, deceleratingCount, dragCount, rating, dateStr, self._id];
     //    NSLog(@"\nuserBehaviorData:\n%@\n", userBehaviorData);
         [behaviorDataArray addObject:userBehaviorData];
 //        [[NSUserDefaults standardUserDefaults] setObject:userBehaviorData forKey:@"behaviorData"];
@@ -146,10 +182,22 @@
     }
 }
 
+//修正日期格式
+- (NSString *)fixStringForDate:(NSDate *)date
+{
+    NSDateFormatter* dateFormatter = [[NSDateFormatter alloc] init];
+    [dateFormatter setDateStyle:NSDateFormatterFullStyle];
+    [dateFormatter setDateFormat:@"yyyy-MM-dd HH:mm:ss"];
+    NSString *fixString = [dateFormatter stringFromDate:date];
+    return fixString;
+}
+
 - (NSString *)flattenHTML:(NSString *)html trimWhiteSpace:(BOOL)trim {
     NSScanner *theScanner = [NSScanner scannerWithString:html];
     NSString *text = nil;
     
+    //跳过<script>
+    html = [html substringFromIndex:[html rangeOfString:@"<body>"].location];
     NSLog(@"\nhtml: %@\n", html);
     
     while ([theScanner isAtEnd] == NO) {
@@ -172,27 +220,33 @@
 - (void)webViewDidFinishLoad:(UIWebView *)webView
 {
     NSLog(@"\n加载完成\nreadingTime: %.0lf\n", readingTime);
+    if (self.webView.scrollView.contentSize.height > readHt) {
+        //页面高度大于一屏
+        readTimeThreshold = 12;
+    } else {
+        //页面高度不足一屏幕
+        readTimeThreshold = MIN(12, (float)([self flattenHTML:self.content trimWhiteSpace:YES].length) * 12.0f / 400.0f);
+        if ([self.content rangeOfString:@"<img "].length > 0) {
+            //包含图片
+            NSLog(@"\n包含图片，+= 5\n");
+            readTimeThreshold += 5;
+        }
+    }
+    NSLog(@"\nreadTimeThreshold: %.1lf\n", readTimeThreshold);
     [mainTimer invalidate];
     [subTimer invalidate];
-    mainTimer = [NSTimer scheduledTimerWithTimeInterval:12 target:self selector:@selector(readingTimeCut) userInfo:nil repeats:NO];
+    mainTimer = [NSTimer scheduledTimerWithTimeInterval:readTimeThreshold target:self selector:@selector(readingTimeCut) userInfo:nil repeats:NO];
     subTimer = [NSTimer scheduledTimerWithTimeInterval:0.1 target:self selector:@selector(readingTimeAdd) userInfo:nil repeats:YES];
-//    readingTime = 0;
-//    dragCount = 0;
-//    deceleratingCount = 0;
-//    timerIsRunning = YES;
-//    isFullReading = NO;
-//    rating = 0;
+    
+//    NSLog(@"\nreadHt: %.2lf\n", readHt);
 }
 
 //阅读时间截停
 - (void)readingTimeCut
 {
-    NSLog(@"\n12s\n");
+    NSLog(@"\nThreshold: %.1lfs\n", readTimeThreshold);
     timerIsRunning = NO;
     [subTimer setFireDate:[NSDate distantFuture]];
-//    [self dismissViewControllerAnimated:YES completion:^{
-//        NSLog(@"\nOK\n");
-//    }];
 }
 
 //阅读时间累加
@@ -239,14 +293,6 @@
     }
 }
 
-//- (void)draggingTimerStart
-//{
-//    NSRunLoop *runLoop = [NSRunLoop currentRunLoop];
-//    [draggingTimer invalidate];
-//    draggingTimer = [NSTimer scheduledTimerWithTimeInterval:0.7 target:self selector:@selector(draggingTimeCut) userInfo:nil repeats:NO];
-//    [runLoop run];
-//}
-
 - (void)scrollViewWillBeginDragging:(UIScrollView *)scrollView
 {
     if (timerIsRunning == NO) {
@@ -255,7 +301,7 @@
     }
 //    NSLog(@"\nwillBeginDragging\n");
     [mainTimer invalidate];
-    mainTimer = [NSTimer scheduledTimerWithTimeInterval:12 target:self selector:@selector(readingTimeCut) userInfo:nil repeats:NO];
+    mainTimer = [NSTimer scheduledTimerWithTimeInterval:readTimeThreshold target:self selector:@selector(readingTimeCut) userInfo:nil repeats:NO];
     //还未加载完成，开始操作则开始计时
     if (subTimer == nil) {
         NSLog(@"\nsubTimer == nil\n");
@@ -289,7 +335,7 @@
 //计算readHeight
 - (void)calcReadHeight
 {
-    if ((self.webView.scrollView.contentSize.height > 504) && (isFullReading == false)) {
+    if ((self.webView.scrollView.contentSize.height > readHt) && (isFullReading == false)) {
         readHeight = MAX(readHeight, self.webView.scrollView.contentOffset.y + 568);
         readHeight = MIN(readHeight, self.webView.scrollView.contentSize.height);
 //        NSLog(@"\nreadHeight: %.0lf\n", readHeight);

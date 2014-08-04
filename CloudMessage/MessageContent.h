@@ -13,5 +13,6 @@
 
 @property (nonatomic, assign) IBOutlet UIWebView *webView;
 @property (nonatomic, retain) NSString *content;
+@property (nonatomic, retain) NSString *_id;    //内容id
 
 @end

@@ -25,7 +25,7 @@
 		443225051979012600C4DCA7 /* libxml2.2.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 443225041979012600C4DCA7 /* libxml2.2.dylib */; };
 		443225081979038C00C4DCA7 /* ASIHTTPRequest.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 443225071979038C00C4DCA7 /* ASIHTTPRequest.framework */; };
 		443225091979065F00C4DCA7 /* ASIHTTPRequest.framework in Sources */ = {isa = PBXBuildFile; fileRef = 443225071979038C00C4DCA7 /* ASIHTTPRequest.framework */; };
-		4441FAF8194990E20030D7EB /* MsgOfSub.m in Sources */ = {isa = PBXBuildFile; fileRef = 4441FAF6194990E20030D7EB /* MsgOfSub.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		4441FAF8194990E20030D7EB /* MsgOfSub.m in Sources */ = {isa = PBXBuildFile; fileRef = 4441FAF6194990E20030D7EB /* MsgOfSub.m */; };
 		4441FAF9194990E20030D7EB /* MsgOfSub.xib in Resources */ = {isa = PBXBuildFile; fileRef = 4441FAF7194990E20030D7EB /* MsgOfSub.xib */; };
 		4441FB0E1949AC530030D7EB /* arrow_down.png in Resources */ = {isa = PBXBuildFile; fileRef = 4441FAFC1949AC530030D7EB /* arrow_down.png */; };
 		4441FB0F1949AC530030D7EB /* arrow_down1.png in Resources */ = {isa = PBXBuildFile; fileRef = 4441FAFD1949AC530030D7EB /* arrow_down1.png */; };
@@ -85,7 +85,7 @@
 		449B935F1796646000F11D89 /* icon.png in Resources */ = {isa = PBXBuildFile; fileRef = 449B935E1796646000F11D89 /* icon.png */; };
 		449B93611796647A00F11D89 /* Default.png in Resources */ = {isa = PBXBuildFile; fileRef = 449B93601796647A00F11D89 /* Default.png */; };
 		449E8A4D17A8D19300FB8116 /* OBGradientView.m in Sources */ = {isa = PBXBuildFile; fileRef = 449E8A4917A8D19200FB8116 /* OBGradientView.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
-		449E8A4E17A8D19300FB8116 /* CMNavBarNotificationView.m in Sources */ = {isa = PBXBuildFile; fileRef = 449E8A4C17A8D19200FB8116 /* CMNavBarNotificationView.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		449E8A4E17A8D19300FB8116 /* CMNavBarNotificationView.m in Sources */ = {isa = PBXBuildFile; fileRef = 449E8A4C17A8D19200FB8116 /* CMNavBarNotificationView.m */; };
 		449E8A5517A9021400FB8116 /* whiteArrow.png in Resources */ = {isa = PBXBuildFile; fileRef = 449E8A5217A9021200FB8116 /* whiteArrow.png */; };
 		449E8A5617A9021400FB8116 /* whiteArrow@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 449E8A5317A9021300FB8116 /* whiteArrow@2x.png */; };
 		44A32610193F30AC00A0527F /* LoginViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 44A3260E193F30AC00A0527F /* LoginViewController.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
@@ -119,7 +119,7 @@
 		44AA641E17A4F63300D10256 /* DetailViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 44AA641C17A4F63300D10256 /* DetailViewController.xib */; };
 		44AA642517A4F64600D10256 /* MyMessage.m in Sources */ = {isa = PBXBuildFile; fileRef = 44AA642017A4F64300D10256 /* MyMessage.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
 		44AA642617A4F64600D10256 /* MyMessage.xib in Resources */ = {isa = PBXBuildFile; fileRef = 44AA642117A4F64300D10256 /* MyMessage.xib */; };
-		44AA642717A4F64600D10256 /* MySubscription.m in Sources */ = {isa = PBXBuildFile; fileRef = 44AA642317A4F64500D10256 /* MySubscription.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		44AA642717A4F64600D10256 /* MySubscription.m in Sources */ = {isa = PBXBuildFile; fileRef = 44AA642317A4F64500D10256 /* MySubscription.m */; };
 		44AA642817A4F64600D10256 /* MySubscription.xib in Resources */ = {isa = PBXBuildFile; fileRef = 44AA642417A4F64500D10256 /* MySubscription.xib */; };
 		44AA642C17A4F65300D10256 /* SubscriptionList.m in Sources */ = {isa = PBXBuildFile; fileRef = 44AA642A17A4F65200D10256 /* SubscriptionList.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
 		44AA642D17A4F65300D10256 /* SubscriptionList.xib in Resources */ = {isa = PBXBuildFile; fileRef = 44AA642B17A4F65200D10256 /* SubscriptionList.xib */; };

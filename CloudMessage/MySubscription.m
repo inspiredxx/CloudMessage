@@ -166,11 +166,11 @@
             }
             else
             {
-                //                if (hidden) {
-                //                    [view setFrame:CGRectMake(view.frame.origin.x, view.frame.origin.y, view.frame.size.width, 480)];
-                //                } else {
-                //                    [view setFrame:CGRectMake(view.frame.origin.x, view.frame.origin.y, view.frame.size.width, 480-49)];
-                //                }
+//                if (hidden) {
+//                    [view setFrame:CGRectMake(view.frame.origin.x, view.frame.origin.y, view.frame.size.width, 480)];
+//                } else {
+//                    [view setFrame:CGRectMake(view.frame.origin.x, view.frame.origin.y, view.frame.size.width, 480-49)];
+//                }
             }
         }];
     }
@@ -299,7 +299,8 @@
 //    NSLog(@"\nobj: %@\n", obj);
     NSLog(@"\nrid: %@\n", [obj objectForKey:@"_id"]);
     
-    MsgOfSub *msgOfSub = [[[MsgOfSub alloc] initWithNibName:@"MsgOfSub" bundle:nil] autorelease];
+//    MsgOfSub *msgOfSub = [[[MsgOfSub alloc] initWithNibName:@"MsgOfSub" bundle:nil] autorelease];
+    MsgOfSub *msgOfSub = [[MsgOfSub alloc] initWithNibName:@"MsgOfSub" bundle:nil];
     msgOfSub.title = [obj objectForKey:@"name"];
     msgOfSub.rid = [obj objectForKey:@"_id"];
     msgOfSub.hidesBottomBarWhenPushed = YES;
@@ -342,7 +343,8 @@
             //获取订阅列表响应
 //        NSLog(@"data: %@", data);
             if (_mySubscriptionData != nil) {                
-                [_mySubscriptionData release];
+//                [_mySubscriptionData release];
+                _mySubscriptionData = nil;
             }
             _mySubscriptionData = [[NSMutableArray alloc] initWithArray:(NSMutableArray *)[dic objectForKey:@"data"]];
 
