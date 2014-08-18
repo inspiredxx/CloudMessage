@@ -81,7 +81,7 @@
     self.content = [metaStr stringByAppendingString:self.content];
     self.content = [self.content stringByAppendingString:@"\n</body>\n</html>"];
     
-    NSLog(@"\ncontent:\n%@\n", self.content);
+//    NSLog(@"\ncontent:\n%@\n", self.content);
     
     readTimeThreshold = 12;
     readHt = [UIScreen mainScreen].applicationFrame.size.height - self.navigationController.navigationBar.frame.size.height;

@@ -191,6 +191,7 @@
         NSString *includeTime = [[NSString stringWithString:[data objectForKey:@"include_time"]] substringToIndex:19];
         NSString *content = [[NSString alloc] initWithFormat:@"<b><center><font size=4>%@</b></center></font><br>%@<br>%@", [data objectForKey:@"title"], includeTime, [data objectForKey:@"content"]];
         messageContent.content = content;
+        messageContent._id = [data objectForKey:@"_id"];
 //        [content release];
         [self.navigationController pushViewController:messageContent animated:YES];
 //        [messageContent release];
@@ -306,6 +307,7 @@
             NSString *includeTime = [[NSString stringWithString:[data objectForKey:@"include_time"]] substringToIndex:19];
             NSString *content = [[NSString alloc] initWithFormat:@"<b><center><font size=4>%@</b></center></font><br>%@<br>%@", [data objectForKey:@"title"], includeTime, [data objectForKey:@"content"]];
             messageContent.content = content;
+            messageContent._id = [data objectForKey:@"_id"];
 //            [content release];
             messageContent.hidesBottomBarWhenPushed = YES;
             [self.navigationController pushViewController:messageContent animated:YES];
@@ -425,6 +427,7 @@
             NSString *includeTime = [[NSString stringWithString:[data objectForKey:@"include_time"]] substringToIndex:19];
             NSString *content = [[NSString alloc] initWithFormat:@"<b><center><font size=4>%@</b></center></font><br>%@<br>%@", [data objectForKey:@"title"], includeTime, [data objectForKey:@"content"]];
             messageContent.content = content;
+            messageContent._id = [data objectForKey:@"_id"];
 //            [content release];
             messageContent.hidesBottomBarWhenPushed = YES;
             [self.navigationController pushViewController:messageContent animated:YES];
